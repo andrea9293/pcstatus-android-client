@@ -5,16 +5,19 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity implements Observer {
@@ -36,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
         @Override
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
-                case R.id.navigation_home:
+                case R.id.navigation_miscellaneous:
                     mTextMessage.setText(SingletonBatteryStatus.getInstance().getMiscellaneous());
                     return true;
                 case R.id.navigation_dashboard:
@@ -59,11 +62,13 @@ public class MainActivity extends AppCompatActivity implements Observer {
         SingletonModel.getInstance().setSharedPreferences(getApplicationContext());
         SingletonBatteryStatus.getInstance().addingObserver(MainActivity.this);
         wiFiConnectionController = new WiFiConnectionController(this);
-        startWifi();
+        //startWifi();
+        startBluetoothClient();
 
         mTextMessage = (TextView) findViewById(R.id.message);
         navigation = (BottomNavigationView) findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        scheduleTask();
     }
 
     public void startWifi(){
@@ -83,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
     private void refresh() {
         switch (navigation.getSelectedItemId()) {
-            case R.id.navigation_home:
+            case R.id.navigation_miscellaneous:
                 mTextMessage.setText(SingletonBatteryStatus.getInstance().getMiscellaneous());
                 break;
             case R.id.navigation_dashboard:
@@ -141,10 +146,48 @@ public class MainActivity extends AppCompatActivity implements Observer {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            bluetoothConnectionController.scheduleTask();
+            //bluetoothConnectionController.scheduleTask();
+            bluetoothConnectionController.getStatFromServer();
         }
         if (resultCode == RESULT_CANCELED) {
             //do nothing
         }
+    }
+
+    private void scheduleTask() {
+        final Handler handler = new Handler();
+        Timer timer = new Timer();
+        Log.d(TAG, "task programmato");
+        task = new TimerTask() {
+            @Override
+            public void run() {
+                handler.post(new Runnable() {
+                    public void run() {
+                        Log.d(TAG, "task eseguito");
+                       // wiFiConnectionController.getStatsFromServer();
+                        bluetoothConnectionController.getStatFromServer();
+                    }
+                });
+            }
+        };
+        timer.schedule(task, 0, 1500); //it executes this every 1 minute
+    }
+
+    private void taskCancel() {
+        if (task != null)
+            bluetoothConnectionController.stopConnection();
+            task.cancel();
+    }
+
+    @Override
+    public void onBackPressed() {
+        taskCancel();
+        super.onBackPressed();
+    }
+
+    @Override
+    protected void onDestroy() {
+        taskCancel();
+        super.onDestroy();
     }
 }

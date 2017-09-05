@@ -38,6 +38,7 @@ public class BluetoothConnectionController {
     private boolean taskHasStarted = false;
     private AsyncTask<Void, Integer, String> threadReciveMessage = null;
     private Timer timer;
+    private boolean firstBoot = true;
 
     BluetoothConnectionController(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
@@ -52,7 +53,8 @@ public class BluetoothConnectionController {
             if (!btAdapter.isEnabled()) {
                 mainActivity.enableBluetooth(btAdapter);
             }else {
-               scheduleTask();
+               //scheduleTask();
+                getStatFromServer();
             }
         }
     }
@@ -61,7 +63,8 @@ public class BluetoothConnectionController {
 
         @Override
         protected String doInBackground(Void... voids) {
-            publishProgress();
+            if (firstBoot)
+                publishProgress();
             if (address == null) {
                 address = getAddress();
                 Log.d(TAG, "64| stampo address " + address);
@@ -79,7 +82,8 @@ public class BluetoothConnectionController {
             Log.d(TAG, "78| sto cancellando il task");
             taskCancel();
             stopConnection();
-            hideDialog();
+            if(firstBoot)
+                hideDialog();
             mainActivity.alertBox("ERRORE", "Server Bluetooth non trovato", BluetoothConnectionController.this);
             //new BluetoothConnection().execute();
         }
@@ -100,7 +104,9 @@ public class BluetoothConnectionController {
                     hideDialog();
                 }
                 //scheduleTask();
-                hideDialog();
+                if (firstBoot)
+                    hideDialog();
+                firstBoot = false;
             }
         }
     }
@@ -124,7 +130,8 @@ public class BluetoothConnectionController {
         @Override
         protected void onPostExecute(Void aVoid) {
             hideDialog();
-            scheduleTask();
+            //scheduleTask();
+            getStatFromServer();
         }
     }
 
@@ -182,7 +189,7 @@ public class BluetoothConnectionController {
     }
 
 
-    private void stopConnection() {
+    public void stopConnection() {
         try {
             btSocket.close();
         } catch (IOException e2) {
@@ -299,13 +306,21 @@ public class BluetoothConnectionController {
                                 Log.d(TAG, "task eseguito");
                                 threadReciveMessage = new ReciveMessage().execute();
                             }else {
+                                if(threadReciveMessage == null){
+                                    Log.d(TAG, "è null");
+                                }else {
+                                    if(threadReciveMessage.getStatus() == AsyncTask.Status.FINISHED){
+                                        Log.d(TAG, "è finito");
+                                    }
+                                }
+
                                 Log.d(TAG, "task in attesa di input");
                             }
                         }
                     });
                 }
             };
-            timer.schedule(task, 0, 30000); //it executes this every 1 minute
+            timer.schedule(task, 0, 1500); //it executes this every 1 minute
         }
     }
 
@@ -317,6 +332,22 @@ public class BluetoothConnectionController {
         if (task != null) {
             task.cancel();
             taskHasStarted = false;
+        }
+    }
+
+    public void getStatFromServer(){
+        if (threadReciveMessage == null || threadReciveMessage.getStatus() == AsyncTask.Status.FINISHED) {
+            Log.d(TAG, "task eseguito");
+            threadReciveMessage = new ReciveMessage().execute();
+        }else {
+            if(threadReciveMessage == null){
+                Log.d(TAG, "è null");
+            }else {
+                Log.d(TAG, String.valueOf(threadReciveMessage.getStatus()));
+
+            }
+
+            Log.d(TAG, "task in attesa di input");
         }
     }
 }

@@ -41,7 +41,7 @@ class WiFiConnectionController {
         new GetIp().execute();
     }
 
-    private void getStatsFromServer(){
+    public void getStatsFromServer(){
         new GetStats().execute();
     }
 
@@ -109,7 +109,7 @@ class WiFiConnectionController {
 
         @Override
         protected String doInBackground(Void... voids) {
-            publishProgress();
+            //publishProgress();
             URLConnection prova;
             try {
                 prova = new URL("http://" + SingletonModel.getInstance().getIp() + ":8080/greeting").openConnection();
@@ -133,7 +133,7 @@ class WiFiConnectionController {
         @Override
         protected void onCancelled() {
             SingletonModel.getInstance().setIp("");
-            hideDialog();
+            //hideDialog();
             createErrorDialog();
             taskCancel();
             mainActivity.setTextView("Insert the Ip address showed on your PC");
@@ -152,7 +152,7 @@ class WiFiConnectionController {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            hideDialog();
+            //hideDialog();
         }
     }
 
@@ -243,7 +243,7 @@ class WiFiConnectionController {
                 });
             }
         };
-        timer.schedule(task, 0, 60000); //it executes this every 1 minute
+        timer.schedule(task, 0, 1500); //it executes this every 1 minute
     }
 
     private void taskCancel() {
