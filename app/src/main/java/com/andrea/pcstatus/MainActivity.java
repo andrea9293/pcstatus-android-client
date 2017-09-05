@@ -4,9 +4,11 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -42,11 +44,17 @@ public class MainActivity extends AppCompatActivity implements Observer {
                 case R.id.navigation_miscellaneous:
                     mTextMessage.setText(SingletonBatteryStatus.getInstance().getMiscellaneous());
                     return true;
-                case R.id.navigation_dashboard:
+                case R.id.navigation_hdd:
+                    mTextMessage.setText(SingletonBatteryStatus.getInstance().getDisks());
+                    return true;
+                case R.id.navigation_pcinfo:
                     mTextMessage.setText(SingletonBatteryStatus.getInstance().getComputerInfo());
                     return true;
-                case R.id.navigation_notifications:
-                    mTextMessage.setText(SingletonBatteryStatus.getInstance().getDisks());
+                case R.id.navigation_battery:
+                    mTextMessage.setText(SingletonBatteryStatus.getInstance().getBattery());
+                    return true;
+                case R.id.navigation_cpu:
+                    mTextMessage.setText(SingletonBatteryStatus.getInstance().getCpu());
                     return true;
             }
             return false;
@@ -54,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
     };
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,11 +100,17 @@ public class MainActivity extends AppCompatActivity implements Observer {
             case R.id.navigation_miscellaneous:
                 mTextMessage.setText(SingletonBatteryStatus.getInstance().getMiscellaneous());
                 break;
-            case R.id.navigation_dashboard:
+            case R.id.navigation_hdd:
+                mTextMessage.setText(SingletonBatteryStatus.getInstance().getDisks());
+                break;
+            case R.id.navigation_pcinfo:
                 mTextMessage.setText(SingletonBatteryStatus.getInstance().getComputerInfo());
                 break;
-            case R.id.navigation_notifications:
-                mTextMessage.setText(SingletonBatteryStatus.getInstance().getDisks());
+            case R.id.navigation_battery:
+                mTextMessage.setText(SingletonBatteryStatus.getInstance().getBattery());
+                break;
+            case R.id.navigation_cpu:
+                mTextMessage.setText(SingletonBatteryStatus.getInstance().getCpu());
                 break;
         }
     }

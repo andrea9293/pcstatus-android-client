@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">PC status</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="title_miscellaneous">System Load</string>
+    <string name="title_hdd">Disks</string>
+    <string name="title_pcinfo">System Information</string>
+    <string name="title_battery">Battery</string>
+    <string name="title_cpu">CPU</string>
 </resources>
