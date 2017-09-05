@@ -4,11 +4,11 @@ import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.os.Build;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -17,12 +17,25 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.components.YAxis.AxisDependency;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.github.mikephil.charting.utils.ColorTemplate;
+
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class MainActivity extends AppCompatActivity implements Observer {
+public class MainActivity extends AppCompatActivity implements Observer, OnChartValueSelectedListener {
 
     private TextView mTextMessage;
     private static final String TAG = "MainActivity";
@@ -34,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
     private Boolean isBluetoothConnection = false;
     private Context context;
     private BottomNavigationView navigation;
+    private LineChart mChart;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -43,9 +57,11 @@ public class MainActivity extends AppCompatActivity implements Observer {
             switch (item.getItemId()) {
                 case R.id.navigation_miscellaneous:
                     mTextMessage.setText(SingletonBatteryStatus.getInstance().getMiscellaneous());
+                    mChart.setVisibility(LineChart.VISIBLE);
                     return true;
                 case R.id.navigation_hdd:
                     mTextMessage.setText(SingletonBatteryStatus.getInstance().getDisks());
+                    mChart.setVisibility(LineChart.INVISIBLE);
                     return true;
                 case R.id.navigation_pcinfo:
                     mTextMessage.setText(SingletonBatteryStatus.getInstance().getComputerInfo());
@@ -62,12 +78,66 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
     };
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context=getApplicationContext();
+
+        mChart = (LineChart) findViewById(R.id.chart1);
+        mChart.setOnChartValueSelectedListener(this);
+
+        // enable description text
+        mChart.getDescription().setEnabled(true);
+
+        // enable touch gestures
+        mChart.setTouchEnabled(false);
+
+        // enable scaling and dragging
+        mChart.setDragEnabled(true);
+        mChart.setScaleEnabled(true);
+        mChart.setDrawGridBackground(false);
+
+        // if disabled, scaling can be done on x- and y-axis separately
+        mChart.setPinchZoom(true);
+
+        // set an alternative background color
+        mChart.setBackgroundColor(Color.LTGRAY);
+
+        LineData data = new LineData();
+        data.setValueTextColor(Color.WHITE);
+
+        // add empty data
+        mChart.setData(data);
+        // get the legend (only possible after setting data)
+        Legend l = mChart.getLegend();
+
+        // modify the legend ...
+        l.setForm(Legend.LegendForm.LINE);
+        l.setTypeface(Typeface.createFromAsset(getAssets(), "OpenSans-Light.ttf"));
+        l.setTextColor(Color.WHITE);
+
+        XAxis xl = mChart.getXAxis();
+        xl.setTypeface(Typeface.createFromAsset(getAssets(), "OpenSans-Light.ttf"));
+        xl.setTextColor(Color.WHITE);
+        xl.setDrawGridLines(false);
+        xl.setAvoidFirstLastClipping(true);
+        xl.setEnabled(true);
+
+        YAxis leftAxis = mChart.getAxisLeft();
+        leftAxis.setTypeface(Typeface.createFromAsset(getAssets(), "OpenSans-Light.ttf"));
+        leftAxis.setTextColor(Color.WHITE);
+        leftAxis.setAxisMaximum(100f);
+        leftAxis.setAxisMinimum(0f);
+        leftAxis.setDrawGridLines(true);
+
+        YAxis rightAxis = mChart.getAxisRight();
+        rightAxis.setEnabled(false);
+
+
+
+
+
         SingletonModel.getInstance().setSharedPreferences(getApplicationContext());
         SingletonBatteryStatus.getInstance().addingObserver(MainActivity.this);
         wiFiConnectionController = new WiFiConnectionController(this);
@@ -181,6 +251,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
                         Log.d(TAG, "task eseguito");
                        // wiFiConnectionController.getStatsFromServer();
                         bluetoothConnectionController.getStatFromServer();
+                        addEntry();
                     }
                 });
             }
@@ -204,5 +275,65 @@ public class MainActivity extends AppCompatActivity implements Observer {
     protected void onDestroy() {
         taskCancel();
         super.onDestroy();
+    }
+
+    @Override
+    public void onValueSelected(Entry e, Highlight h) {
+        Log.i("Entry selected", e.toString());
+    }
+
+    @Override
+    public void onNothingSelected() {
+        Log.i("Nothing selected", "Nothing selected.");
+    }
+
+    private LineDataSet createSet() {
+
+        LineDataSet set = new LineDataSet(null, "Dynamic Data");
+        set.setAxisDependency(AxisDependency.LEFT);
+        set.setColor(ColorTemplate.getHoloBlue());
+        set.setCircleColor(Color.WHITE);
+        set.setLineWidth(2f);
+        set.setCircleRadius(4f);
+        set.setFillAlpha(65);
+        set.setFillColor(ColorTemplate.getHoloBlue());
+        set.setHighLightColor(Color.rgb(244, 117, 117));
+        set.setValueTextColor(Color.WHITE);
+        set.setValueTextSize(9f);
+        set.setDrawValues(false);
+        return set;
+    }
+
+    private void addEntry() {
+
+        LineData data = mChart.getData();
+
+        if (data != null) {
+
+            ILineDataSet set = data.getDataSetByIndex(0);
+            // set.addEntry(...); // can be called as well
+
+            if (set == null) {
+                set = createSet();
+                data.addDataSet(set);
+            }
+
+            data.addEntry(new Entry(set.getEntryCount(), (float) (Math.random() * 40) + 30f), 0);
+            data.notifyDataChanged();
+
+            // let the chart know it's data has changed
+            mChart.notifyDataSetChanged();
+
+            // limit the number of visible entries
+            mChart.setVisibleXRangeMaximum(15);
+            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
+
+            // move to the latest entry
+            mChart.moveViewToX(data.getEntryCount());
+
+            // this automatically refreshes the chart (calls invalidate())
+            // mChart.moveViewTo(data.getXValCount()-7, 55f,
+            // AxisDependency.LEFT);
+        }
     }
 }
