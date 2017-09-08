@@ -5,4 +5,7 @@
     <string name="title_pcinfo">System Information</string>
     <string name="title_battery">Battery</string>
     <string name="title_cpu">CPU</string>
+    <string name="title_settings">Settings</string>
+    <string name="settings">Settings</string>
+    <string name="rescan">Rescan</string>
 </resources>
