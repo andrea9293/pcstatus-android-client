@@ -31,18 +31,15 @@ class WiFiConnectionController {
     private static final String TAG = "WiFiController";
     private MainActivity mainActivity;
     private TimerTask task;
+    private boolean firstScan = true;
 
     WiFiConnectionController(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
-        //new GetStats().execute();
+        checkWifiForStats();
     }
 
     private void startWiFiServer() {
         new GetIp().execute();
-    }
-
-    public void getStatsFromServer(){
-        new GetStats().execute();
     }
 
     private class GetIp extends AsyncTask<Void, Integer, String> {
@@ -61,7 +58,6 @@ class WiFiConnectionController {
                 publishProgress();
                 subnet = getMyIp();
                 for (int i = lower; i <= upper; i++) {
-                    Log.d(TAG, "prova " + subnet + i);
                     URLConnection prova;
                     try {
                         prova = new URL("http://" + subnet + i + ":8080/greeting").openConnection();
@@ -73,7 +69,7 @@ class WiFiConnectionController {
                         SingletonModel.getInstance().setIp(subnet + i);
                         return subnet + i;
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        // e.printStackTrace();
                     }
                 }
                 return null;
@@ -114,18 +110,16 @@ class WiFiConnectionController {
             try {
                 prova = new URL("http://" + SingletonModel.getInstance().getIp() + ":8080/greeting").openConnection();
                 prova.setConnectTimeout(200);
-                Log.d(TAG, "indirizzo = http://" + SingletonModel.getInstance().getIp() + ":8080/greeting");
                 BufferedReader in = new BufferedReader(new InputStreamReader(prova.getInputStream()));
                 String inputLine;
                 String ris = null;
                 while ((inputLine = in.readLine()) != null)
                     ris = inputLine;
                 in.close();
-                Log.d(TAG, ris);
                 return ris;
             } catch (IOException e) {
                 this.cancel(true);
-                e.printStackTrace();
+                Log.w(TAG, "non sono connesso al server");
             }
             return null;
         }
@@ -133,16 +127,19 @@ class WiFiConnectionController {
         @Override
         protected void onCancelled() {
             SingletonModel.getInstance().setIp("");
-            //hideDialog();
-            createErrorDialog();
-            taskCancel();
-            mainActivity.setTextView("Insert the Ip address showed on your PC");
+            if (firstScan){
+                new GetIp().execute();
+                firstScan = false;
+            }else {
+                taskCancel();
+                createErrorDialog();
+                mainActivity.setTextView("Insert the Ip address showed on your PC");
+            }
         }
 
         @Override
         protected void onProgressUpdate(Integer... values) {
             createDialog("Connection to sever");
-
         }
 
         @Override
@@ -170,10 +167,10 @@ class WiFiConnectionController {
             createWifiServerError();
     }
 
-    void checkWifiForStats() {
+    private void checkWifiForStats() {
         WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (wifi.isWifiEnabled())
-            new GetStats().execute(); //new WiFiConnectionController(MainActivity.this);
+            new GetStats().execute();
         else
             createWifiStatsError();
     }
@@ -200,7 +197,7 @@ class WiFiConnectionController {
     private void createWifiStatsError() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
         builder.setTitle("Errore - Il WiFi risulta spento")
-                .setMessage("Per utilizzare BatteryStatus è necessaria una connessione alla stessa rete WiFi del PC oppure una connessione bluetooth con il computer\n\nAccendere il Wifi e riprovare oppure utilizzare il bluetooth?")
+                .setMessage("Per utilizzare PCstatus è necessaria una connessione alla stessa rete WiFi del PC oppure una connessione bluetooth con il computer\n\nAccendere il Wifi e riprovare oppure utilizzare il bluetooth?")
                 .setCancelable(false)
                 .setPositiveButton("WiFi", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
@@ -211,6 +208,7 @@ class WiFiConnectionController {
                 }).setNegativeButton("Bluetooth", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                mainActivity.taskCancel();
                 mainActivity.startBluetoothClient();
             }
         });
@@ -219,6 +217,7 @@ class WiFiConnectionController {
     }
 
     private ProgressDialog dialog;
+
     private void createDialog(String m) {
         dialog = ProgressDialog.show(mainActivity, "",
                 m + ". Please wait...", true);
@@ -232,23 +231,26 @@ class WiFiConnectionController {
         final Handler handler = new Handler();
         Timer timer = new Timer();
         Log.d(TAG, "task programmato");
-        task = new TimerTask() {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    public void run() {
-                        Log.d(TAG, "task eseguito");
-                        getStatsFromServer();
-                    }
-                });
-            }
-        };
-        timer.schedule(task, 0, 1500); //it executes this every 1 minute
+        if (task == null) {
+            task = new TimerTask() {
+                @Override
+                public void run() {
+                    handler.post(new Runnable() {
+                        public void run() {
+                            Log.d(TAG, "task eseguito");
+                            new GetStats().execute();
+                        }
+                    });
+                }
+            };
+            timer.schedule(task, 0, 1500); //it executes this every 1,5 seconds
+        }
     }
 
-    private void taskCancel() {
+    public void taskCancel() {
         if (task != null)
             task.cancel();
+        task = null;
     }
 
     private void createErrorDialog() {
@@ -258,12 +260,12 @@ class WiFiConnectionController {
                 .setCancelable(false)
                 .setPositiveButton("Auto", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        startWiFiServer();
+                        new GetIp().execute();
                     }
-                }).setNegativeButton("Manual Scan", new DialogInterface.OnClickListener() {
+                }).setNegativeButton("Try with Bluetooth", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-
+                mainActivity.startBluetoothClient();
             }
         });
         AlertDialog alert = builder.create();
