@@ -1,7 +1,5 @@
 package com.andrea.pcstatus;
 
-import android.util.Log;
-
 import org.json.JSONException;
 
 import java.math.BigDecimal;
@@ -136,7 +134,6 @@ public class SingletonBatteryStatus extends Observable {
         Float[] tmpFlo = new Float[tmpStr.length];
         for (int i = 0; i < tmpStr.length; i++) {
             tmpFlo[i] = Float.valueOf(tmpStr[i]);
-            Log.d(TAG, "stampo perperthread " + tmpFlo[i]);
         }
         this.percPerThread=tmpFlo;
     }
