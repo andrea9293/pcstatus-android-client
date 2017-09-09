@@ -44,6 +44,9 @@ public class jsonParser {
         string = jsonObj.getString("numericFreeRam");
         SingletonBatteryStatus.getInstance().setFreeRam(string);
 
+        string = jsonObj.getString("numericPercPerThread");
+        SingletonBatteryStatus.getInstance().setPercPerThread(string);
+
 
         SingletonBatteryStatus.getInstance().notifyMyObservers();
     }

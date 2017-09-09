@@ -1,9 +1,12 @@
-package com.andrea.pcstatus;
+package com.andrea.pcstatus.Charts;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.Log;
+import android.view.ViewGroup;
 
+import com.andrea.pcstatus.MainActivity;
+import com.andrea.pcstatus.SingletonBatteryStatus;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Legend;
@@ -31,7 +34,8 @@ public class LineChartMaker implements OnChartValueSelectedListener {
 
     public LineChart createLineChart(){
 
-        mChart = (LineChart) mainActivity.findViewById(R.id.chart1);
+        //mChart = (LineChart) mainActivity.findViewById(R.id.chart1);
+        mChart = new LineChart(mainActivity.getApplicationContext());
         mChart.setOnChartValueSelectedListener(this);
 
         // enable description text
@@ -92,6 +96,7 @@ public class LineChartMaker implements OnChartValueSelectedListener {
         YAxis rightAxis = mChart.getAxisRight();
         rightAxis.setEnabled(false);
 
+        mChart.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         return mChart;
     }
 

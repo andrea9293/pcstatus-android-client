@@ -1,5 +1,7 @@
 package com.andrea.pcstatus;
 
+import android.util.Log;
+
 import org.json.JSONException;
 
 import java.math.BigDecimal;
@@ -23,6 +25,7 @@ public class SingletonBatteryStatus extends Observable {
     private Float cpuLoad;
     private Float percRam;
     private String[] avaibleFileSystem;
+    private Float[] percPerThread;
 
 
     private SingletonBatteryStatus() {
@@ -88,13 +91,13 @@ public class SingletonBatteryStatus extends Observable {
     }
 
     private String arrayStringToString(String[] arrayString) {
-        if (arrayString!=null){
+        if (arrayString != null) {
             StringBuilder toString = new StringBuilder();
             for (int i = 0; i < arrayString.length; i++) {
                 toString.append(arrayString[i] + "\n");
             }
             return toString.toString();
-        }else
+        } else
             return null;
     }
 
@@ -126,5 +129,19 @@ public class SingletonBatteryStatus extends Observable {
         BigDecimal bd = new BigDecimal(Float.toString(d));
         bd = bd.setScale(decimalPlace, BigDecimal.ROUND_HALF_UP);
         return Float.parseFloat(bd.toString());
+    }
+
+    public void setPercPerThread(String percPerThread) {
+        String[] tmpStr = percPerThread.split("\n");
+        Float[] tmpFlo = new Float[tmpStr.length];
+        for (int i = 0; i < tmpStr.length; i++) {
+            tmpFlo[i] = Float.valueOf(tmpStr[i]);
+            Log.d(TAG, "stampo perperthread " + tmpFlo[i]);
+        }
+        this.percPerThread=tmpFlo;
+    }
+
+    public Float[] getPercPerThread() {
+        return percPerThread;
     }
 }

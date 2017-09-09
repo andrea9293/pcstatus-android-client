@@ -11,8 +11,11 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.andrea.pcstatus.Charts.LineChartMaker;
+import com.andrea.pcstatus.Charts.MultipleLineChartMaker;
 import com.github.mikephil.charting.charts.LineChart;
 
 import java.util.Observable;
@@ -27,9 +30,12 @@ public class MainActivity extends AppCompatActivity implements Observer {
     private WiFiConnectionController wiFiConnectionController;
     private BluetoothConnectionController bluetoothConnectionController;
     private BottomNavigationView navigation;
-    private LineChart mChart;
     private LineChartMaker lineChartMaker;
+    private LineChart singleLineChart;
+    private LineChart multipleLineChart;
+    private MultipleLineChartMaker multipleLineChartMaker;
     private MenuItem rescanButton;
+    private LinearLayout chartsLinearLayout;
     private boolean connectionFlag = false;
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -39,24 +45,31 @@ public class MainActivity extends AppCompatActivity implements Observer {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_miscellaneous:
+                    chartsLinearLayout.removeAllViews();
+                    chartsLinearLayout.addView(singleLineChart);
+                    singleLineChart.animateY(1000);
                     if (SingletonBatteryStatus.getInstance().getMiscellaneous() != null)
                         mTextMessage.setText(SingletonBatteryStatus.getInstance().getMiscellaneous());
-                    mChart.setVisibility(LineChart.VISIBLE);
                     return true;
                 case R.id.navigation_hdd:
+                    chartsLinearLayout.removeAllViews();
                     if (SingletonBatteryStatus.getInstance().getDisks() != null)
                         mTextMessage.setText(SingletonBatteryStatus.getInstance().getDisks());
-                    mChart.setVisibility(LineChart.INVISIBLE);
                     return true;
                 case R.id.navigation_pcinfo:
+                    chartsLinearLayout.removeAllViews();
                     if (SingletonBatteryStatus.getInstance().getComputerInfo() != null)
                         mTextMessage.setText(SingletonBatteryStatus.getInstance().getComputerInfo());
                     return true;
                 case R.id.navigation_battery:
+                    chartsLinearLayout.removeAllViews();
                     if (SingletonBatteryStatus.getInstance().getBattery() != null)
                         mTextMessage.setText(SingletonBatteryStatus.getInstance().getBattery());
                     return true;
                 case R.id.navigation_cpu:
+                    chartsLinearLayout.removeAllViews();
+                    chartsLinearLayout.addView(multipleLineChart);
+                    multipleLineChart.animateY(1000);
                     if (SingletonBatteryStatus.getInstance().getCpu() != null)
                         mTextMessage.setText(SingletonBatteryStatus.getInstance().getCpu());
                     return true;
@@ -73,9 +86,15 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
         Context context = getApplicationContext();
 
-        lineChartMaker = new LineChartMaker(MainActivity.this);
 
-        mChart = lineChartMaker.createLineChart();
+        multipleLineChartMaker = new MultipleLineChartMaker(this);
+        multipleLineChart = multipleLineChartMaker.createLineChart();
+
+        lineChartMaker = new LineChartMaker(this);
+        singleLineChart = lineChartMaker.createLineChart();
+
+        chartsLinearLayout = (LinearLayout) findViewById(R.id.chartLayout);
+        chartsLinearLayout.addView(singleLineChart);
 
         SingletonModel.getInstance().setSharedPreferences(getApplicationContext());
         SingletonBatteryStatus.getInstance().addingObserver(MainActivity.this);
@@ -99,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
     @Override
     public void update(Observable observable, Object o) {
         refresh();
-        lineChartMaker.addEntry();
+        updateCharts();
     }
 
     private void refresh() {
@@ -251,5 +270,14 @@ public class MainActivity extends AppCompatActivity implements Observer {
         } else {
             rescanButton.setVisible(true);
         }
+    }
+
+    public boolean isConnectionFlag() {
+        return connectionFlag;
+    }
+
+    private void updateCharts(){
+        lineChartMaker.addEntry();
+        multipleLineChartMaker.addEntry();
     }
 }
