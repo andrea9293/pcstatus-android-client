@@ -32,14 +32,12 @@ class WiFiConnectionController {
     private MainActivity mainActivity;
     private TimerTask task;
     private boolean firstScan = true;
+    private Timer timer;
+    private AsyncTask<Void, Integer, String> threadReciveMessage = null;
 
     WiFiConnectionController(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
         checkWifiForStats();
-    }
-
-    private void startWiFiServer() {
-        new GetIp().execute();
     }
 
     private class GetIp extends AsyncTask<Void, Integer, String> {
@@ -84,7 +82,10 @@ class WiFiConnectionController {
         @Override
         protected void onPostExecute(String objects) {
             SingletonModel.getInstance().setIp(objects);
-            scheduleTask();
+            if (!mainActivity.isConnectionFlag()) {
+                scheduleTask();
+                mainActivity.setConnectionFlag(true);
+            }
             hideDialog();
         }
 
@@ -105,7 +106,6 @@ class WiFiConnectionController {
 
         @Override
         protected String doInBackground(Void... voids) {
-            //publishProgress();
             URLConnection prova;
             try {
                 prova = new URL("http://" + SingletonModel.getInstance().getIp() + ":8080/greeting").openConnection();
@@ -127,10 +127,10 @@ class WiFiConnectionController {
         @Override
         protected void onCancelled() {
             SingletonModel.getInstance().setIp("");
-            if (firstScan){
+            if (firstScan) {
                 new GetIp().execute();
                 firstScan = false;
-            }else {
+            } else {
                 taskCancel();
                 createErrorDialog();
                 mainActivity.setTextView("Insert the Ip address showed on your PC");
@@ -149,7 +149,11 @@ class WiFiConnectionController {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            //hideDialog();
+
+            if (!mainActivity.isConnectionFlag()) {
+                scheduleTask();
+                mainActivity.setConnectionFlag(true);
+            }
         }
     }
 
@@ -162,7 +166,7 @@ class WiFiConnectionController {
     private void checkWifiForServer() {
         WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (wifi.isWifiEnabled())
-            new GetIp().execute();//new WiFiConnectionController(MainActivity.this, "Server");
+            new GetIp().execute();
         else
             createWifiServerError();
     }
@@ -204,10 +208,12 @@ class WiFiConnectionController {
                         WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                         wifi.setWifiEnabled(true);
                         checkWifiForStats();
+                        mainActivity.setConnectionFlag(false);
                     }
                 }).setNegativeButton("Bluetooth", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                mainActivity.setConnectionFlag(false);
                 mainActivity.taskCancel();
                 mainActivity.startBluetoothClient();
             }
@@ -229,16 +235,19 @@ class WiFiConnectionController {
 
     private void scheduleTask() {
         final Handler handler = new Handler();
-        Timer timer = new Timer();
-        Log.d(TAG, "task programmato");
+        timer = new Timer();
         if (task == null) {
             task = new TimerTask() {
                 @Override
                 public void run() {
                     handler.post(new Runnable() {
                         public void run() {
-                            Log.d(TAG, "task eseguito");
-                            new GetStats().execute();
+                            if (threadReciveMessage == null || threadReciveMessage.getStatus() == AsyncTask.Status.FINISHED) {
+                                threadReciveMessage = new GetStats().execute();
+                                Log.d(TAG, "task eseguito ");
+                            } else {
+                                Log.d(TAG, "task in attesa di input");
+                            }
                         }
                     });
                 }
@@ -248,9 +257,12 @@ class WiFiConnectionController {
     }
 
     public void taskCancel() {
-        if (task != null)
+        if (task != null) {
+            timer.cancel();
             task.cancel();
-        task = null;
+            timer = null;
+            task = null;
+        }
     }
 
     private void createErrorDialog() {
@@ -260,14 +272,16 @@ class WiFiConnectionController {
                 .setCancelable(false)
                 .setPositiveButton("Auto", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
+                        mainActivity.setConnectionFlag(false);
                         new GetIp().execute();
                     }
                 }).setNegativeButton("Try with Bluetooth", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
+                mainActivity.setConnectionFlag(false);
                 mainActivity.startBluetoothClient();
             }
-        });
+        }).setCancelable(true);
         AlertDialog alert = builder.create();
         alert.show();
     }

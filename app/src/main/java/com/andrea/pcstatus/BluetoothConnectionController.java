@@ -35,17 +35,15 @@ public class BluetoothConnectionController {
     private String address = null;
     private MainActivity mainActivity;
     private TimerTask task;
-    private boolean taskHasStarted = false;
     private AsyncTask<Void, Integer, String> threadReciveMessage = null;
     private boolean firstBoot = true;
+    private Timer timer;
 
     BluetoothConnectionController(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         Log.d(TAG, "attivazione client bluetooth");
-        // Check for Bluetooth support and then check to make sure it is turned on
-
-        // Emulator doesn't support Bluetooth and will return null
+        // Check for Bluetooth support and then check to make sure it is turned on // Emulator doesn't support Bluetooth and will return null
         if (btAdapter == null) {
             mainActivity.alertBox("Fatal Error", "Bluetooth Not supported. Aborting.");
         } else {
@@ -53,7 +51,6 @@ public class BluetoothConnectionController {
                 mainActivity.enableBluetooth(btAdapter);
             } else {
                 scheduleTask();
-                //getStatFromServer();
             }
         }
     }
@@ -64,11 +61,24 @@ public class BluetoothConnectionController {
         protected String doInBackground(Void... voids) {
             if (firstBoot)
                 publishProgress();
-            if (address == null) {
+
+            /*f (address == null) {
                 address = getAddress();
-                return reciveMessage(this, address);
+                return reciveMessage(this, address);*/
+
+            if (!isAddressSaved()) {
+                Log.d(TAG, "non è salvato");
+                getAddress();
+                return reciveMessage(this);
             } else {
-                return reciveMessage(this, address);
+                if (firstBoot){
+                    Log.d(TAG, "è salvato e sono al primo avvio");
+                    return reciveMessage(this, SingletonModel.getInstance().getBluetoothAddress());
+                }
+                else {
+                    Log.d(TAG, "è salvato e sono agli avii successivi");
+                    return reciveMessage(this);
+                }
             }
         }
 
@@ -76,11 +86,11 @@ public class BluetoothConnectionController {
         protected void onCancelled() {
             taskCancel();
             stopConnection();
+            SingletonModel.getInstance().setBluetoothAddress("");
             if (firstBoot)
                 hideDialog();
             mainActivity.alertBox("ERRORE", "Server Bluetooth non trovato", BluetoothConnectionController.this);
             mainActivity.setConnectionFlag(false);
-            //new BluetoothConnection().execute();
         }
 
         @Override
@@ -107,36 +117,33 @@ public class BluetoothConnectionController {
         }
     }
 
-    private class BluetoothConnection extends AsyncTask<Void, Integer, Void> {
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            publishProgress();
-            if (address == null)
-                address = getAddress();
-            connect(address);
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            createDialog("Searching for a fast bluetooth connection with server");
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            hideDialog();
-            scheduleTask();
-            mainActivity.setConnectionFlag(true);
-            //getStatFromServer();
-        }
-    }
-
-    public void bluetoothConnectionExecute() {
-        new BluetoothConnection().execute();
-    }
-
     private String reciveMessage(ReciveMessage reciveMessage, String address) {
+
+            Log.d(TAG, "in reciveMessage stampo " + address);
+            BluetoothDevice device = btAdapter.getRemoteDevice(address);
+
+            try {
+                btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
+            } catch (IOException e) {
+                mainActivity.alertBox("1Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".");
+            }
+
+            // Discovery is resource intensive.  Make sure it isn't going on
+            // when you attempt to connect and pass your message.
+            btAdapter.cancelDiscovery();
+
+            // Establish the connection.  This will block until it connects.
+            try {
+                btSocket.connect();
+                Log.d(TAG, "connesso a " + device.getName());
+            } catch (IOException e) {
+                try {
+                    btSocket.close();
+                } catch (IOException e2) {
+                    mainActivity.alertBox("2Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".");
+                }
+            }
+
         final InputStream inStream;
         final String[] jStr = {null};
         try {
@@ -152,7 +159,7 @@ public class BluetoothConnectionController {
                 reciveMessage.cancel(true);
                 e.printStackTrace();
             }
-
+//todo da vedere l'indirizzo memorizzato
             // Create a data stream so we can talk to server.
             String message = "Message from phone\n";
             OutputStream outStream = btSocket.getOutputStream();
@@ -160,56 +167,52 @@ public class BluetoothConnectionController {
             outStream.write(msgBuffer);
 
         } catch (IOException e) {
-            String msg = "In onResume() and an exception occurred during write: " + e.getMessage();
             if (address.equals("00:00:00:00:00:00"))
-                msg = msg + ".\n\nUpdate your server address from 00:00:00:00:00:00 to the correct address on line 37 in the java code";
-            msg = msg + ".\n\nCheck that the SPP UUID: " + MY_UUID.toString() + " exists on server.\n\n";
-
-            //AlertBox("4Fatal Error", msg);
-            reciveMessage.cancel(true);
-            //Log.d("prova", "il dispositivo non è: " + device.getName());
+                Log.d(TAG, "Check that the SPP UUID: " + MY_UUID.toString() + " exists on server.\n\n");
             e.printStackTrace();
+            reciveMessage.cancel(true);
         }
         return jStr[0];
     }
 
-   /* public void reciveBluetoothMessageExecute() {
-        new ReciveMessage().execute();
-    }*/
+    private String reciveMessage(ReciveMessage reciveMessage) {
 
+        Log.d(TAG, "in reciveMessage stampo " + address);
+
+        final InputStream inStream;
+        final String[] jStr = {null};
+        try {
+            inStream = btSocket.getInputStream();
+            BufferedReader bReader = new BufferedReader(new InputStreamReader(inStream));
+            try {
+                long startTime = System.currentTimeMillis();
+                jStr[0] = bReader.readLine();
+                long stopTime = System.currentTimeMillis();
+                Log.e("time to execute code", stopTime - startTime + ""); //circa 2.7 secondi
+            } catch (IOException e) {
+                taskCancel();
+                reciveMessage.cancel(true);
+                e.printStackTrace();
+            }
+//todo da vedere l'indirizzo memorizzato
+            // Create a data stream so we can talk to server.
+            String message = "Message from phone\n";
+            OutputStream outStream = btSocket.getOutputStream();
+            byte[] msgBuffer = message.getBytes();
+            outStream.write(msgBuffer);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            reciveMessage.cancel(true);
+        }
+        return jStr[0];
+    }
 
     private void stopConnection() {
         try {
             btSocket.close();
         } catch (IOException e2) {
             mainActivity.alertBox("Fatal Error", "In onPause() and failed to close socket." + e2.getMessage() + ".");
-        }
-    }
-
-    private void connect(String address) {
-        BluetoothDevice device = btAdapter.getRemoteDevice(address);
-
-        try {
-            btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
-        } catch (IOException e) {
-            mainActivity.alertBox("1Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".");
-        }
-
-        // Discovery is resource intensive.  Make sure it isn't going on
-        // when you attempt to connect and pass your message.
-        btAdapter.cancelDiscovery();
-
-        // Establish the connection.  This will block until it connects.
-        try {
-            btSocket.connect();
-            Log.d("prova", "connesso a " + device.getName());
-        } catch (IOException e) {
-            try {
-                btSocket.close();
-            } catch (IOException e2) {
-                mainActivity.alertBox("2Fatal Error", "In onResume() and unable to close socket during connection failure" +
-                        e2.getMessage() + ".");
-            }
         }
     }
 
@@ -252,6 +255,7 @@ public class BluetoothConnectionController {
             }
         }
         Log.d(TAG, "stampo ris " + ris);
+        SingletonModel.getInstance().setBluetoothAddress(ris);
         return ris;
     }
 
@@ -268,9 +272,8 @@ public class BluetoothConnectionController {
 
     public void scheduleTask() {
         final Handler handler = new Handler();
-        Timer timer = new Timer();
-        Log.d(TAG, "task programmato");
-        if (task == null || !taskHasStarted()) {
+        timer = new Timer();
+        if (task == null) {
             task = new TimerTask() {
                 @Override
                 public void run() {
@@ -279,11 +282,11 @@ public class BluetoothConnectionController {
                             if (threadReciveMessage == null || threadReciveMessage.getStatus() == AsyncTask.Status.FINISHED) {
                                 threadReciveMessage = new ReciveMessage().execute();
                             } else {
-                                if (threadReciveMessage == null) {
+                               /* if (threadReciveMessage == null) {
                                 } else {
                                     if (threadReciveMessage.getStatus() == AsyncTask.Status.FINISHED) {
                                     }
-                                }
+                                }*/
                                 Log.d(TAG, "task in attesa di input");
                             }
                         }
@@ -294,14 +297,18 @@ public class BluetoothConnectionController {
         }
     }
 
-    private boolean taskHasStarted() {
-        return taskHasStarted;
-    }
-
     public void taskCancel() {
         if (task != null) {
             task.cancel();
-            taskHasStarted = false;
+            timer.cancel();
+            task = null;
+            timer = null;
         }
+    }
+
+    private Boolean isAddressSaved() {
+        String bluetoothAddress = SingletonModel.getInstance().getBluetoothAddress();
+        Log.d(TAG, "stampo in isAddres " + SingletonModel.getInstance().getBluetoothAddress() + " " + bluetoothAddress);
+        return !bluetoothAddress.equals("");
     }
 }
