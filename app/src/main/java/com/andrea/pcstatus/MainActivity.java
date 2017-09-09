@@ -16,7 +16,10 @@ import android.widget.TextView;
 
 import com.andrea.pcstatus.Charts.LineChartMaker;
 import com.andrea.pcstatus.Charts.MultipleLineChartMaker;
+import com.andrea.pcstatus.Charts.PieChartMaker;
+import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.charts.PieChart;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -36,7 +39,38 @@ public class MainActivity extends AppCompatActivity implements Observer {
     private MultipleLineChartMaker multipleLineChartMaker;
     private MenuItem rescanButton;
     private LinearLayout chartsLinearLayout;
+    private PieChartMaker pieChartMaker;
+    private PieChart pieChart;
     private boolean connectionFlag = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Context context = getApplicationContext();
+
+
+        multipleLineChartMaker = new MultipleLineChartMaker(this);
+        multipleLineChart = multipleLineChartMaker.createLineChart();
+
+        pieChartMaker = new PieChartMaker(this);
+        pieChart = pieChartMaker.createChart();
+        lineChartMaker = new LineChartMaker(this);
+        singleLineChart = lineChartMaker.createLineChart();
+
+        chartsLinearLayout = (LinearLayout) findViewById(R.id.chartLayout);
+        chartsLinearLayout.addView(singleLineChart);
+
+        SingletonModel.getInstance().setSharedPreferences(getApplicationContext());
+        SingletonBatteryStatus.getInstance().addingObserver(MainActivity.this);
+        alertBox("Choose wifi or Bluetooth", "PCstatus need a connection via WiFi or bluetooth\n" +
+                "What you want to use?", REQUEST_WIFI_OR_BLUETOOTH);
+
+        mTextMessage = (TextView) findViewById(R.id.message);
+        navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+    }
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
             = new BottomNavigationView.OnNavigationItemSelectedListener() {
@@ -53,6 +87,8 @@ public class MainActivity extends AppCompatActivity implements Observer {
                     return true;
                 case R.id.navigation_hdd:
                     chartsLinearLayout.removeAllViews();
+                    chartsLinearLayout.addView(pieChart);
+                    pieChart.animateY(1000, Easing.EasingOption.EaseInOutQuad);
                     if (SingletonBatteryStatus.getInstance().getDisks() != null)
                         mTextMessage.setText(SingletonBatteryStatus.getInstance().getDisks());
                     return true;
@@ -68,6 +104,8 @@ public class MainActivity extends AppCompatActivity implements Observer {
                     return true;
                 case R.id.navigation_cpu:
                     chartsLinearLayout.removeAllViews();
+                    LinearLayout secondl = new LinearLayout(getApplicationContext());
+
                     chartsLinearLayout.addView(multipleLineChart);
                     multipleLineChart.animateY(1000);
                     if (SingletonBatteryStatus.getInstance().getCpu() != null)
@@ -79,32 +117,6 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
     };
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        Context context = getApplicationContext();
-
-
-        multipleLineChartMaker = new MultipleLineChartMaker(this);
-        multipleLineChart = multipleLineChartMaker.createLineChart();
-
-        lineChartMaker = new LineChartMaker(this);
-        singleLineChart = lineChartMaker.createLineChart();
-
-        chartsLinearLayout = (LinearLayout) findViewById(R.id.chartLayout);
-        chartsLinearLayout.addView(singleLineChart);
-
-        SingletonModel.getInstance().setSharedPreferences(getApplicationContext());
-        SingletonBatteryStatus.getInstance().addingObserver(MainActivity.this);
-        alertBox("Choose wifi or Bluetooth", "PCstatus need a connection via WiFi or bluetooth\n" +
-                "What you want to use?", REQUEST_WIFI_OR_BLUETOOTH);
-
-        mTextMessage = (TextView) findViewById(R.id.message);
-        navigation = (BottomNavigationView) findViewById(R.id.navigation);
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
-    }
 
     public void startWifiClient() {
         taskCancel();
@@ -279,5 +291,6 @@ public class MainActivity extends AppCompatActivity implements Observer {
     private void updateCharts(){
         lineChartMaker.addEntry();
         multipleLineChartMaker.addEntry();
+        pieChartMaker.setData(2,100);
     }
 }
