@@ -1,12 +1,8 @@
-package com.andrea.pcstatus.Charts;
+package com.andrea.pcstatus.viewsPackage.charts;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
-import android.text.style.RelativeSizeSpan;
-import android.text.style.StyleSpan;
-import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.andrea.pcstatus.MainActivity;
@@ -14,71 +10,53 @@ import com.andrea.pcstatus.SingletonBatteryStatus;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
-import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
-import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.utils.MPPointF;
 
 import java.util.ArrayList;
+import java.util.Observable;
+import java.util.Observer;
 
 /**
  * Created by andre on 09/09/2017.
  */
 
-public class PieChartMaker implements
-        OnChartValueSelectedListener {
+public class PieChartMaker implements  Observer, InterfaceChart {
 
     private PieChart mChart;
     private MainActivity mainActivity;
 
     public PieChartMaker(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
+        mChart = createChart();
+        SingletonBatteryStatus.getInstance().addingObserver(this);
     }
 
 
-    public PieChart createChart() {
+    private PieChart createChart() {
         mChart = new PieChart(mainActivity);
         mChart.setUsePercentValues(true);
         mChart.getDescription().setEnabled(false);
         mChart.setExtraOffsets(5, 10, 5, 5);
-
         mChart.setDragDecelerationFrictionCoef(0.95f);
-
         mChart.setCenterTextTypeface(Typeface.createFromAsset(mainActivity.getAssets(), "OpenSans-Light.ttf"));
-        mChart.setCenterText(generateCenterSpannableText());
-
+        mChart.setCenterTextSize(17);
         mChart.setDrawHoleEnabled(true);
         mChart.setHoleColor(Color.WHITE);
-
         mChart.setTransparentCircleColor(Color.WHITE);
         mChart.setTransparentCircleAlpha(110);
-
         mChart.setHoleRadius(58f);
         mChart.setTransparentCircleRadius(61f);
-
         mChart.setDrawCenterText(true);
-
         mChart.setRotationAngle(0);
-        // enable rotation of the chart by touch
+
+        // disable rotation of the chart by touch
         mChart.setRotationEnabled(false);
         mChart.setHighlightPerTapEnabled(true);
-
-        // mChart.setUnit(" €");
-        // mChart.setDrawUnitsInChart(true);
-
-        // add a selection listener
-        mChart.setOnChartValueSelectedListener(this);
-
-        //setData(4, 100);
-
         mChart.animateY(1400, Easing.EasingOption.EaseInOutQuad);
-        // mChart.spin(2000, 0, 360);
-
 
         Legend l = mChart.getLegend();
         l.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
@@ -90,7 +68,7 @@ public class PieChartMaker implements
         l.setYOffset(0f);
 
         // entry label styling
-        mChart.setEntryLabelColor(Color.DKGRAY);
+        mChart.setEntryLabelColor(rgb("#140500"));
         mChart.setEntryLabelTypeface(Typeface.createFromAsset(mainActivity.getAssets(), "OpenSans-Regular.ttf"));
         mChart.setEntryLabelTextSize(12f);
 
@@ -98,49 +76,26 @@ public class PieChartMaker implements
         return mChart;
     }
 
-    public void setData(int count, float range) {
-
-        float mult = range;
-        // count = SingletonBatteryStatus.getInstance().getAvaibleFileSystem().length;
-
+    private void setData(int count, float range) {
         ArrayList<PieEntry> entries = new ArrayList<PieEntry>();
 
         // NOTE: The order of the entries when being added to the entries array determines their position around the center of
         // the chart.
-
-
-        entries.add(new PieEntry(Float.parseFloat(SingletonBatteryStatus.getInstance().getAvaibleFileSystem()[0]),"Unused space"));
-        entries.add(new PieEntry(100f - Float.parseFloat(SingletonBatteryStatus.getInstance().getAvaibleFileSystem()[0]),"Used space"));
-
+        entries.add(new PieEntry(SingletonBatteryStatus.getInstance().getAvaibleFileSystem()[0], "Unused space"));
+        entries.add(new PieEntry(100f - SingletonBatteryStatus.getInstance().getAvaibleFileSystem()[0], "Used space"));
+        mChart.setCenterText("Drive " + SingletonBatteryStatus.getInstance().getFirstFilesystemLabel() + "\n" +
+                "Free space: " + SingletonBatteryStatus.getInstance().getAvaibleFileSystem()[0] +" %");
         PieDataSet dataSet = new PieDataSet(entries, "");
 
         dataSet.setDrawIcons(false);
-
         dataSet.setSliceSpace(3f);
         dataSet.setIconsOffset(new MPPointF(0, 40));
         dataSet.setSelectionShift(5f);
 
-        // add a lot of colors
-
         ArrayList<Integer> colors = new ArrayList<Integer>();
-
-        for (int c : ColorTemplate.LIBERTY_COLORS) //Liberty
-            colors.add(c);
-
-        for (int c : ColorTemplate.JOYFUL_COLORS)
-            colors.add(c);
-
-        for (int c : ColorTemplate.COLORFUL_COLORS)
-            colors.add(c);
-
-        for (int c : ColorTemplate.LIBERTY_COLORS)
-            colors.add(c);
-
-        for (int c : ColorTemplate.PASTEL_COLORS)
-            colors.add(c);
-
+        colors.add(rgb("#bbdefb"));
+        colors.add(rgb("#78909c"));
         dataSet.setColors(colors);
-        //dataSet.setSelectionShift(0f);
 
         PieData data = new PieData(dataSet);
         data.setValueFormatter(new PercentFormatter());
@@ -151,35 +106,34 @@ public class PieChartMaker implements
 
         // undo all highlights
         mChart.highlightValues(null);
-
         mChart.invalidate();
     }
 
-    private SpannableString generateCenterSpannableText() {
-
-        //todo da aggiungere la label della partizione
-        SpannableString s = new SpannableString("MPAndroidChart\ndeveloped by Philipp Jahoda");
-        s.setSpan(new RelativeSizeSpan(1.7f), 0, 14, 0);
-        s.setSpan(new StyleSpan(Typeface.NORMAL), 14, s.length() - 15, 0);
-        s.setSpan(new ForegroundColorSpan(Color.GRAY), 14, s.length() - 15, 0);
-        s.setSpan(new RelativeSizeSpan(.8f), 14, s.length() - 15, 0);
-        s.setSpan(new StyleSpan(Typeface.ITALIC), s.length() - 14, s.length(), 0);
-        s.setSpan(new ForegroundColorSpan(ColorTemplate.getHoloBlue()), s.length() - 14, s.length(), 0);
-        return s;
+    private static int rgb(String hex) {
+        int color = (int) Long.parseLong(hex.replace("#", ""), 16);
+        int r = (color >> 16) & 0xFF;
+        int g = (color >> 8) & 0xFF;
+        int b = (color >> 0) & 0xFF;
+        return Color.rgb(r, g, b);
     }
 
     @Override
-    public void onValueSelected(Entry e, Highlight h) {
-
-        if (e == null)
-            return;
-        Log.i("VAL SELECTED",
-                "Value: " + e.getY() + ", index: " + h.getX()
-                        + ", DataSet index: " + h.getDataSetIndex());
+    public void addEntry() {
+        setData(2,100);
     }
 
     @Override
-    public void onNothingSelected() {
-        Log.i("PieChart", "nothing selected");
+    public View getView() {
+        return mChart;
+    }
+
+    @Override
+    public void animate() {
+        mChart.animateY(1000, Easing.EasingOption.EaseInOutQuad);
+    }
+
+    @Override
+    public void update(Observable observable, Object o) {
+        addEntry();
     }
 }

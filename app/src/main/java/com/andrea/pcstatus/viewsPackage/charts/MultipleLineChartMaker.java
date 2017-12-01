@@ -1,8 +1,8 @@
-package com.andrea.pcstatus.Charts;
+package com.andrea.pcstatus.viewsPackage.charts;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.andrea.pcstatus.MainActivity;
@@ -16,29 +16,28 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
-import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Random;
 
 /**
  * Created by andre on 09/09/2017.
  */
 
-public class MultipleLineChartMaker implements OnChartValueSelectedListener {
+public class MultipleLineChartMaker implements Observer, InterfaceChart {
     private MainActivity mainActivity;
     private LineChart mChart;
 
     public MultipleLineChartMaker(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
+        mChart = createLineChart();
+        SingletonBatteryStatus.getInstance().addingObserver(this);
     }
 
-    public LineChart createLineChart() {
-
-        //mChart = (LineChart) mainActivity.findViewById(R.id.chart1);
+    private LineChart createLineChart() {
         mChart = new LineChart(mainActivity.getApplicationContext());
-        mChart.setOnChartValueSelectedListener(this);
 
         // enable description text
         mChart.getDescription().setEnabled(true);
@@ -64,6 +63,7 @@ public class MultipleLineChartMaker implements OnChartValueSelectedListener {
 
         // add empty data
         mChart.setData(data);
+
         // get the legend (only possible after setting data)
         Legend l = mChart.getLegend();
 
@@ -83,8 +83,6 @@ public class MultipleLineChartMaker implements OnChartValueSelectedListener {
             }
         });
 
-       /* xl.setTypeface(Typeface.createFromAsset(getAssets(), "OpenSans-Light.ttf"));
-        xl.setTextColor(Color.DKGRAY);*/
         xl.setDrawGridLines(false);
         xl.setAvoidFirstLastClipping(true);
         xl.setEnabled(true);
@@ -103,18 +101,7 @@ public class MultipleLineChartMaker implements OnChartValueSelectedListener {
         return mChart;
     }
 
-    @Override
-    public void onValueSelected(Entry e, Highlight h) {
-        Log.i("Entry selected", e.toString());
-    }
-
-    @Override
-    public void onNothingSelected() {
-        Log.i("Nothing selected", "Nothing selected.");
-    }
-
     private LineDataSet createSet() {
-
         LineDataSet set = new LineDataSet(null, "");
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         int color = getRandomColor();
@@ -131,14 +118,13 @@ public class MultipleLineChartMaker implements OnChartValueSelectedListener {
         return set;
     }
 
+    @Override
     public void addEntry() {
-
         LineData data = mChart.getData();
         Float[] tmp = SingletonBatteryStatus.getInstance().getPercPerThread();
 
-            if (data != null) {
+        if (data != null) {
             for (int i = 0; i < tmp.length; i++) {
-                //dataSets.add(data.getDataSetByIndex(i));
                 ILineDataSet set = data.getDataSetByIndex(i);
 
                 if (set == null) {
@@ -146,67 +132,41 @@ public class MultipleLineChartMaker implements OnChartValueSelectedListener {
                     data.addDataSet(set);
                 }
 
-
-               // LineDataSet d = new LineDataSet(new Entry(set.getEntryCount(), tmp[i]), 0, "DataSet" + (i+1));
                 if (tmp[i] == null)
                     set.addEntry(new Entry(set.getEntryCount(), 0));
                 else
                     set.addEntry(new Entry(set.getEntryCount(), tmp[i]));
                 data.notifyDataChanged();
-
-                // let the chart know it's data has changed
-
             }
-                mChart.notifyDataSetChanged();
-
-
-                // limit the number of visible entries
-                mChart.setVisibleXRangeMaximum(15);
-                // mChart.setVisibleYRange(30, AxisDependency.LEFT);
-
-                // move to the latest entry
-                mChart.moveViewToX(data.getEntryCount());
-        }
-
-
-      /*  if (data != null) {
-
-            ILineDataSet set = data.getDataSetByIndex(0);
-            // set.addEntry(...); // can be called as well
-
-            if (set == null) {
-                set = createSet();
-                data.addDataSet(set);
-            }
-
-
-
-            if (SingletonBatteryStatus.getInstance().getCpuLoad() == null)
-                data.addEntry(new Entry(set.getEntryCount(), 0), 0);
-            else
-                data.addEntry(new Entry(set.getEntryCount(), SingletonBatteryStatus.getInstance().getCpuLoad()), 0);
-            data.notifyDataChanged();
 
             // let the chart know it's data has changed
             mChart.notifyDataSetChanged();
 
-
             // limit the number of visible entries
             mChart.setVisibleXRangeMaximum(15);
-            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
 
             // move to the latest entry
             mChart.moveViewToX(data.getEntryCount());
-
-            // this automatically refreshes the chart (calls invalidate())
-            // mChart.moveViewTo(data.getXValCount()-7, 55f,
-            // AxisDependency.LEFT);
-        }*/
+        }
     }
 
-    public int getRandomColor(){
+    @Override
+    public View getView() {
+        return mChart;
+    }
+
+    @Override
+    public void animate() {
+        mChart.animateY(1000);
+    }
+
+    private int getRandomColor() {
         Random rnd = new Random();
         return Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
     }
 
+    @Override
+    public void update(Observable observable, Object o) {
+        addEntry();
+    }
 }

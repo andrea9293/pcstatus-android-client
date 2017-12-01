@@ -2,18 +2,17 @@ package com.andrea.pcstatus;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-
-import java.util.Observable;
+import android.util.Log;
 
 /**
  * Created by andre on 26/07/2017.
  */
 
-class SingletonModel extends Observable {
-    SharedPreferences sharedPreferences;
+public class SingletonModel {
+    private SharedPreferences sharedPreferences;
     private static final SingletonModel ourInstance = new SingletonModel();
 
-    static SingletonModel getInstance() {
+    public static SingletonModel getInstance() {
         return ourInstance;
     }
 
@@ -21,23 +20,10 @@ class SingletonModel extends Observable {
     }
 
     private static final String PREFS_NAME = "MyPrefsFile";
-    private String content;
 
-    /*public void setContent(String content) throws JSONException {
-        setChanged();
-        notifyObservers(new JSONObject(content).getString("content"));
-    }*/
-
-    public String getContent() {
-        return content;
-    }
 
     public void setSharedPreferences(Context context) {
         sharedPreferences = context.getSharedPreferences(PREFS_NAME, 0);
-    }
-
-    public void observerAdd(MainActivity mainActivity) {
-        addObserver(mainActivity);
     }
 
     public void setIp(String ip) {
@@ -58,5 +44,26 @@ class SingletonModel extends Observable {
     public String getBluetoothAddress(){
         String prefBluetoothAddress= "prefBluetoothAddress";
         return sharedPreferences.getString(prefBluetoothAddress, "");
+    }
+
+    public void setUrl(String url) {
+        String prefServerUrl = "prefServerUrl";
+        sharedPreferences.edit().putString(prefServerUrl, url).apply();
+    }
+
+    public String getUrl(){
+        String prefServerUrl = "prefServerUrl";
+        return sharedPreferences.getString(prefServerUrl, "");
+    }
+
+    public void setLatestIp(String ip) {
+        String prefServerLatestIp = "prefServerLatestIp";
+        Log.d("singletonRoba", ip);
+        sharedPreferences.edit().putString(prefServerLatestIp, ip).apply();
+    }
+
+    public String getLatestIp() {
+        String prefServerLatestIp = "prefServerLatestIp ";
+        return sharedPreferences.getString(prefServerLatestIp , "");
     }
 }

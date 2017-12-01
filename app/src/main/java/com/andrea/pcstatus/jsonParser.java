@@ -4,14 +4,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class jsonParser {
-    private String TAG = "JsonParser";
+/**
+ * this class parses a json string downloaded from URL server.
+ *
+ * @author Andrea Bravaccino
+ */
+class JsonParser {
 
-    public jsonParser(String jsonStr) throws JSONException {
+    /**
+     * the constructor analyzes the string and extracts the information to store it in the model
+     *
+     * @param jsonStr json string downloaded from URL server
+     * @throws JSONException Exception required for json parser
+     * @see org.json.JSONException
+     */
+    JsonParser(String jsonStr) throws JSONException {
         JSONObject jsonObj;
         String[] strings;
         jsonObj = new JSONObject(jsonStr); //assegnazione della stringa ad un oggetto JSONObject
-
         JSONArray jsonArray = jsonObj.getJSONArray("batteryInfo");
         strings = new String[jsonArray.length()];
         for (int i = 0; i < jsonArray.length(); i++) {
@@ -24,42 +34,51 @@ public class jsonParser {
         for (int i = 0; i < jsonArray.length(); i++) {
             strings[i] = jsonArray.getString(i);
         }
-        SingletonBatteryStatus.getInstance().setCpu(strings);
+        SingletonBatteryStatus.getInstance().setCpuInfo(strings);
 
-        jsonArray = jsonObj.getJSONArray("numericAvaibleFileSystem");
-        strings = new String[jsonArray.length()];
-        for(int i =0;i<jsonArray.length();i++){
-            strings[i] = jsonArray.getString(i);
+        try {
+            jsonArray = jsonObj.getJSONArray("numericAvaibleFileSystem");
+            Float[] floats = new Float[jsonArray.length()];
+            for (int i = 0; i < jsonArray.length(); i++) {
+                floats[i] = Float.valueOf(jsonArray.getString(i));
+            }
+            SingletonBatteryStatus.getInstance().setAvaibleFileSystem(floats);
+        } catch (JSONException e) {
+            Float[] floats = new Float[jsonArray.length()];
+            floats[0] = 0f;
+            SingletonBatteryStatus.getInstance().setAvaibleFileSystem(floats);
         }
-        SingletonBatteryStatus.getInstance().setAvaibleFileSystem(strings);
 
         strings = jsonObj.getString("disks").split("\n");
         SingletonBatteryStatus.getInstance().setDisks(strings);
 
-
         strings = jsonObj.getString("computerInfo").split("\n");
         SingletonBatteryStatus.getInstance().setComputerInfo(strings);
-
 
         strings = jsonObj.getString("miscellaneous").split("\n");
         SingletonBatteryStatus.getInstance().setMiscellaneous(strings);
 
         String string;
         string = jsonObj.getString("numericCpuLoad");
-        SingletonBatteryStatus.getInstance().setCpuLoad(string);
+        SingletonBatteryStatus.getInstance().setCpuLoad(Float.parseFloat(string));
 
-        string = jsonObj.getString("numericFreeRam");
-        SingletonBatteryStatus.getInstance().setFreeRam(string);
+        string = jsonObj.getString("numericBatteryPerc");
+        if (!string.equals(""))
+            SingletonBatteryStatus.getInstance().setBatteryPerc(string);
 
         string = jsonObj.getString("numericPercPerThread");
-        SingletonBatteryStatus.getInstance().setPercPerThread(string);
-
-
-
+        String[] tmpStr = string.split("\n");
+        Float[] tmpFlo = new Float[tmpStr.length];
+        for (int i = 0; i < tmpStr.length; i++) {
+            tmpFlo[i] = Float.valueOf(tmpStr[i]);
+        }
+        SingletonBatteryStatus.getInstance().setPercPerThread(tmpFlo);
 
         SingletonBatteryStatus.getInstance().notifyMyObservers();
     }
-
 }
+
+
+
 
 

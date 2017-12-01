@@ -1,46 +1,43 @@
 package com.andrea.pcstatus;
 
 import android.bluetooth.BluetoothAdapter;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.andrea.pcstatus.Charts.LineChartMaker;
-import com.andrea.pcstatus.Charts.MultipleLineChartMaker;
-import com.andrea.pcstatus.Charts.PieChartMaker;
-import com.github.mikephil.charting.animation.Easing;
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.charts.PieChart;
+import com.andrea.pcstatus.viewsPackage.charts.InterfaceChart;
+import com.andrea.pcstatus.viewsPackage.charts.LineChartMaker;
+import com.andrea.pcstatus.viewsPackage.charts.LineChartMakerExtender;
+import com.andrea.pcstatus.viewsPackage.charts.MultipleLineChartMaker;
+import com.andrea.pcstatus.viewsPackage.charts.PieChartMaker;
 
 import java.util.Observable;
 import java.util.Observer;
+
+import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_OR_BLUETOOTH;
+
+//todo eliminare le selezioni nei charts
+//todo sfoltire main activity
+//todo dare un'occhiata al model che sta incasinato secondo me
 
 public class MainActivity extends AppCompatActivity implements Observer {
 
     private TextView mTextMessage;
     private static final String TAG = "MainActivity";
     private static final int REQUEST_ENABLE_BT = 1;
-    private static final int REQUEST_WIFI_OR_BLUETOOTH = 2;
-    private WiFiConnectionController wiFiConnectionController;
-    private BluetoothConnectionController bluetoothConnectionController;
     private BottomNavigationView navigation;
-    private LineChartMaker lineChartMaker;
-    private LineChart singleLineChart;
-    private LineChart multipleLineChart;
-    private MultipleLineChartMaker multipleLineChartMaker;
+    private LineChartMaker systemLoadView;
+    private LineChartMaker batteryView;
+    private MultipleLineChartMaker cpuLoadView;
     private MenuItem rescanButton;
     private LinearLayout chartsLinearLayout;
-    private PieChartMaker pieChartMaker;
-    private PieChart pieChart;
+    private PieChartMaker disksView;
     private boolean connectionFlag = false;
 
     @Override
@@ -48,24 +45,23 @@ public class MainActivity extends AppCompatActivity implements Observer {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Context context = getApplicationContext();
+        AlertDialogManager.mainActivity = this;
+        ClientManager.mainActivity = this;
 
 
-        multipleLineChartMaker = new MultipleLineChartMaker(this);
-        multipleLineChart = multipleLineChartMaker.createLineChart();
-
-        pieChartMaker = new PieChartMaker(this);
-        pieChart = pieChartMaker.createChart();
-        lineChartMaker = new LineChartMaker(this);
-        singleLineChart = lineChartMaker.createLineChart();
-
+        cpuLoadView = new MultipleLineChartMaker(this);
+        disksView = new PieChartMaker(this);
+        systemLoadView = new LineChartMaker(this);
+        batteryView = new LineChartMakerExtender(this);
+        
         chartsLinearLayout = (LinearLayout) findViewById(R.id.chartLayout);
-        chartsLinearLayout.addView(singleLineChart);
+        changeView(systemLoadView);
 
         SingletonModel.getInstance().setSharedPreferences(getApplicationContext());
         SingletonBatteryStatus.getInstance().addingObserver(MainActivity.this);
-        alertBox("Choose wifi or Bluetooth", "PCstatus need a connection via WiFi or bluetooth\n" +
+        AlertDialogManager.alertBox("Choose WiFi or Bluetooth", "PCstatus need a connection via WiFi or Bluetooth\n" +
                 "What you want to use?", REQUEST_WIFI_OR_BLUETOOTH);
+
 
         mTextMessage = (TextView) findViewById(R.id.message);
         navigation = (BottomNavigationView) findViewById(R.id.navigation);
@@ -79,16 +75,12 @@ public class MainActivity extends AppCompatActivity implements Observer {
         public boolean onNavigationItemSelected(@NonNull MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.navigation_miscellaneous:
-                    chartsLinearLayout.removeAllViews();
-                    chartsLinearLayout.addView(singleLineChart);
-                    singleLineChart.animateY(1000);
+                    changeView(systemLoadView);
                     if (SingletonBatteryStatus.getInstance().getMiscellaneous() != null)
                         mTextMessage.setText(SingletonBatteryStatus.getInstance().getMiscellaneous());
                     return true;
                 case R.id.navigation_hdd:
-                    chartsLinearLayout.removeAllViews();
-                    chartsLinearLayout.addView(pieChart);
-                    pieChart.animateY(1000, Easing.EasingOption.EaseInOutQuad);
+                    changeView(disksView);
                     if (SingletonBatteryStatus.getInstance().getDisks() != null)
                         mTextMessage.setText(SingletonBatteryStatus.getInstance().getDisks());
                     return true;
@@ -98,18 +90,14 @@ public class MainActivity extends AppCompatActivity implements Observer {
                         mTextMessage.setText(SingletonBatteryStatus.getInstance().getComputerInfo());
                     return true;
                 case R.id.navigation_battery:
-                    chartsLinearLayout.removeAllViews();
+                    changeView(batteryView);
                     if (SingletonBatteryStatus.getInstance().getBattery() != null)
                         mTextMessage.setText(SingletonBatteryStatus.getInstance().getBattery());
                     return true;
                 case R.id.navigation_cpu:
-                    chartsLinearLayout.removeAllViews();
-                    LinearLayout secondl = new LinearLayout(getApplicationContext());
-
-                    chartsLinearLayout.addView(multipleLineChart);
-                    multipleLineChart.animateY(1000);
-                    if (SingletonBatteryStatus.getInstance().getCpu() != null)
-                        mTextMessage.setText(SingletonBatteryStatus.getInstance().getCpu());
+                    changeView(cpuLoadView);
+                    if (SingletonBatteryStatus.getInstance().getCpuInfo() != null)
+                        mTextMessage.setText(SingletonBatteryStatus.getInstance().getCpuInfo());
                     return true;
             }
             return false;
@@ -118,9 +106,10 @@ public class MainActivity extends AppCompatActivity implements Observer {
     };
 
 
-    public void startWifiClient() {
-        taskCancel();
-        wiFiConnectionController = new WiFiConnectionController(MainActivity.this);
+    private void changeView(InterfaceChart chart) {
+        chartsLinearLayout.removeAllViews();
+        chartsLinearLayout.addView(chart.getView());
+        chart.animate();
     }
 
     public void setTextView(String text) {
@@ -130,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements Observer {
     @Override
     public void update(Observable observable, Object o) {
         refresh();
-        updateCharts();
     }
 
     private void refresh() {
@@ -152,47 +140,10 @@ public class MainActivity extends AppCompatActivity implements Observer {
                     mTextMessage.setText(SingletonBatteryStatus.getInstance().getBattery());
                 break;
             case R.id.navigation_cpu:
-                if (SingletonBatteryStatus.getInstance().getCpu() != null)
-                    mTextMessage.setText(SingletonBatteryStatus.getInstance().getCpu());
+                if (SingletonBatteryStatus.getInstance().getCpuInfo() != null)
+                    mTextMessage.setText(SingletonBatteryStatus.getInstance().getCpuInfo());
                 break;
         }
-    }
-
-    public void startBluetoothClient() {
-        taskCancel();
-        bluetoothConnectionController = new BluetoothConnectionController(MainActivity.this);
-    }
-
-    public void alertBox(String title, String message) {
-        new AlertDialog.Builder(MainActivity.this)
-                .setTitle(title)
-                .setMessage(message + " Press OK to try again.")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface arg0, int arg1) {
-
-                    }
-                }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                //do nothing
-            }
-        }).show();
-    }
-
-    public void alertBox(String title, String message, BluetoothConnectionController b) {
-        new AlertDialog.Builder(MainActivity.this)
-                .setTitle(title)
-                .setMessage(message + " Press OK to try again.")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface arg0, int arg1) {
-                        startBluetoothClient();
-                    }
-                }).setNegativeButton("CANCEL and try with WiFi", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                startWifiClient();
-            }
-        }).show();
     }
 
     public void enableBluetooth(BluetoothAdapter btAdapter) {
@@ -205,47 +156,18 @@ public class MainActivity extends AppCompatActivity implements Observer {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
-            bluetoothConnectionController.scheduleTask();
+            ClientManager.bluetoothConnectionController.scheduleTask();
         }
         if (resultCode == RESULT_CANCELED) {
-            taskCancel();
-            alertBox("Choose wifi or Bluetooth", "PCstatus need a connection via WiFi or bluetooth\n" +
+            ClientManager.taskCancel();
+            AlertDialogManager.alertBox("Choose wifi or Bluetooth", "PCstatus need a connection via WiFi or bluetooth\n" +
                     "What you want to use?", REQUEST_WIFI_OR_BLUETOOTH);
-            //do nothing
         }
-    }
-
-
-    public void taskCancel() {
-        if (wiFiConnectionController != null) {
-            wiFiConnectionController.taskCancel();
-            wiFiConnectionController = null;
-        }
-        if (bluetoothConnectionController != null) {
-            bluetoothConnectionController.taskCancel();
-            bluetoothConnectionController = null;
-        }
-    }
-
-    public void alertBox(String title, String message, int REQUEST_WIFI_OR_BLUETOOTH) {
-        new AlertDialog.Builder(MainActivity.this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("Bluetooth", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface arg0, int arg1) {
-                        startBluetoothClient();
-                    }
-                }).setNegativeButton("WiFi", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                startWifiClient();
-            }
-        }).show();
     }
 
     @Override
     protected void onDestroy() {
-        taskCancel();
+        ClientManager.taskCancel();
         super.onDestroy();
     }
 
@@ -265,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
                 //your action
                 break;
             case R.id.rescanMenuButton:
-                alertBox("Choose wifi or Bluetooth", "PCstatus need a connection via WiFi or bluetooth\n" +
+                AlertDialogManager.alertBox("Choose wifi or Bluetooth", "PCstatus need a connection via WiFi or bluetooth\n" +
                         "What you want to use?", REQUEST_WIFI_OR_BLUETOOTH);
                 break;
             default:
@@ -286,11 +208,5 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
     public boolean isConnectionFlag() {
         return connectionFlag;
-    }
-
-    private void updateCharts(){
-        lineChartMaker.addEntry();
-        multipleLineChartMaker.addEntry();
-        pieChartMaker.setData(2,100);
     }
 }

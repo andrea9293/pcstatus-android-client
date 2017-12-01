@@ -1,4 +1,4 @@
-package com.andrea.pcstatus;
+package com.andrea.pcstatus.connectionPackage;
 
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -7,6 +7,11 @@ import android.bluetooth.BluetoothSocket;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
+
+import com.andrea.pcstatus.AlertDialogManager;
+import com.andrea.pcstatus.MainActivity;
+import com.andrea.pcstatus.SingletonBatteryStatus;
+import com.andrea.pcstatus.SingletonModel;
 
 import org.json.JSONException;
 
@@ -21,6 +26,9 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+
+import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_BASIC;
+import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_OR_BLUETOOTH;
 
 /**
  * Created by andre on 29/07/2017.
@@ -39,13 +47,13 @@ public class BluetoothConnectionController {
     private boolean firstBoot = true;
     private Timer timer;
 
-    BluetoothConnectionController(MainActivity mainActivity) {
+    public BluetoothConnectionController(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         Log.d(TAG, "attivazione client bluetooth");
         // Check for Bluetooth support and then check to make sure it is turned on // Emulator doesn't support Bluetooth and will return null
         if (btAdapter == null) {
-            mainActivity.alertBox("Fatal Error", "Bluetooth Not supported. Aborting.");
+            AlertDialogManager.alertBox("Fatal Error", "Bluetooth Not supported. Aborting.", REQUEST_BASIC);
         } else {
             if (!btAdapter.isEnabled()) {
                 mainActivity.enableBluetooth(btAdapter);
@@ -89,7 +97,7 @@ public class BluetoothConnectionController {
             SingletonModel.getInstance().setBluetoothAddress("");
             if (firstBoot)
                 hideDialog();
-            mainActivity.alertBox("ERRORE", "Server Bluetooth non trovato", BluetoothConnectionController.this);
+            AlertDialogManager.alertBox("ERRORE", "Server Bluetooth non trovato", REQUEST_WIFI_OR_BLUETOOTH);
             mainActivity.setConnectionFlag(false);
         }
 
@@ -125,7 +133,7 @@ public class BluetoothConnectionController {
             try {
                 btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
             } catch (IOException e) {
-                mainActivity.alertBox("1Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".");
+                AlertDialogManager.alertBox("1Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".", REQUEST_BASIC);
             }
 
             // Discovery is resource intensive.  Make sure it isn't going on
@@ -140,7 +148,7 @@ public class BluetoothConnectionController {
                 try {
                     btSocket.close();
                 } catch (IOException e2) {
-                    mainActivity.alertBox("2Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".");
+                    AlertDialogManager.alertBox("2Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".", REQUEST_BASIC);
                 }
             }
 
@@ -212,7 +220,7 @@ public class BluetoothConnectionController {
         try {
             btSocket.close();
         } catch (IOException e2) {
-            mainActivity.alertBox("Fatal Error", "In onPause() and failed to close socket." + e2.getMessage() + ".");
+            AlertDialogManager.alertBox("Fatal Error", "In onPause() and failed to close socket." + e2.getMessage() + ".", REQUEST_BASIC);
         }
     }
 
@@ -233,7 +241,7 @@ public class BluetoothConnectionController {
             try {
                 btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
             } catch (IOException e) {
-                mainActivity.alertBox("1Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".");
+                AlertDialogManager.alertBox("1Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".", REQUEST_BASIC);
             }
 
             // Discovery is resource intensive.  Make sure it isn't going on
@@ -250,7 +258,7 @@ public class BluetoothConnectionController {
                 try {
                     btSocket.close();
                 } catch (IOException e2) {
-                    mainActivity.alertBox("2Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".");
+                    AlertDialogManager.alertBox("2Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".", REQUEST_BASIC);
                 }
             }
         }

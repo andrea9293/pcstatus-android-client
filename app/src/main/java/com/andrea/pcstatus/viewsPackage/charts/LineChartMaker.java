@@ -1,8 +1,8 @@
-package com.andrea.pcstatus.Charts;
+package com.andrea.pcstatus.viewsPackage.charts;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.util.Log;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.andrea.pcstatus.MainActivity;
@@ -16,27 +16,27 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
-import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+
+import java.util.Observable;
+import java.util.Observer;
 
 /**
  * Created by andre on 08/09/2017.
  */
 
-public class LineChartMaker implements OnChartValueSelectedListener {
+public class LineChartMaker implements Observer, InterfaceChart {
     private MainActivity mainActivity;
-    private LineChart mChart;
+    LineChart mChart;
 
     public LineChartMaker(MainActivity mainActivity){
         this.mainActivity = mainActivity;
+        mChart = createLineChart();
+        SingletonBatteryStatus.getInstance().addingObserver(this);
     }
 
-    public LineChart createLineChart(){
-
-        //mChart = (LineChart) mainActivity.findViewById(R.id.chart1);
+    private LineChart createLineChart(){
         mChart = new LineChart(mainActivity.getApplicationContext());
-        mChart.setOnChartValueSelectedListener(this);
 
         // enable description text
         mChart.getDescription().setEnabled(true);
@@ -44,6 +44,7 @@ public class LineChartMaker implements OnChartValueSelectedListener {
 
         // enable touch gestures
         mChart.setTouchEnabled(true);
+
 
         // enable scaling and dragging
         mChart.setDragEnabled(true);;
@@ -80,8 +81,7 @@ public class LineChartMaker implements OnChartValueSelectedListener {
             }
         });
 
-       /* xl.setTypeface(Typeface.createFromAsset(getAssets(), "OpenSans-Light.ttf"));
-        xl.setTextColor(Color.DKGRAY);*/
+
         xl.setDrawGridLines(false);
         xl.setAvoidFirstLastClipping(true);
         xl.setEnabled(true);
@@ -100,26 +100,16 @@ public class LineChartMaker implements OnChartValueSelectedListener {
         return mChart;
     }
 
-    @Override
-    public void onValueSelected(Entry e, Highlight h) {
-        Log.i("Entry selected", e.toString());
-    }
-
-    @Override
-    public void onNothingSelected() {
-        Log.i("Nothing selected", "Nothing selected.");
-    }
-
-    private LineDataSet createSet() {
+    public LineDataSet createSet() {
 
         LineDataSet set = new LineDataSet(null, "Current CPU load");
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
-        set.setColor(Color.BLUE);
-        set.setCircleColor(Color.BLUE);
+        set.setColor(Color.RED);
+        set.setCircleColor(Color.RED);
         set.setLineWidth(2f);
         set.setCircleRadius(4f);
         set.setFillAlpha(65);
-        set.setFillColor(Color.BLUE);
+        set.setFillColor(Color.RED);
         set.setHighLightColor(Color.rgb(244, 117, 117));
         set.setValueTextColor(Color.DKGRAY);
         set.setValueTextSize(9f);
@@ -127,14 +117,12 @@ public class LineChartMaker implements OnChartValueSelectedListener {
         return set;
     }
 
+    @Override
     public void addEntry() {
-
         LineData data = mChart.getData();
 
         if (data != null) {
-
             ILineDataSet set = data.getDataSetByIndex(0);
-            // set.addEntry(...); // can be called as well
 
             if (set == null) {
                 set = createSet();
@@ -153,14 +141,32 @@ public class LineChartMaker implements OnChartValueSelectedListener {
 
             // limit the number of visible entries
             mChart.setVisibleXRangeMaximum(15);
-            // mChart.setVisibleYRange(30, AxisDependency.LEFT);
 
             // move to the latest entry
             mChart.moveViewToX(data.getEntryCount());
-
-            // this automatically refreshes the chart (calls invalidate())
-            // mChart.moveViewTo(data.getXValCount()-7, 55f,
-            // AxisDependency.LEFT);
         }
+    }
+
+    @Override
+    public View getView() {
+        return mChart;
+    }
+
+    @Override
+    public void animate(){
+        mChart.animateY(1000);
+    }
+
+    private static int rgb(String hex) {
+        int color = (int) Long.parseLong(hex.replace("#", ""), 16);
+        int r = (color >> 16) & 0xFF;
+        int g = (color >> 8) & 0xFF;
+        int b = (color >> 0) & 0xFF;
+        return Color.rgb(r, g, b);
+    }
+
+    @Override
+    public void update(Observable observable, Object o) {
+        addEntry();
     }
 }

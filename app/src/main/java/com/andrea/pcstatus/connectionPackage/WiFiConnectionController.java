@@ -1,5 +1,6 @@
-package com.andrea.pcstatus;
+package com.andrea.pcstatus.connectionPackage;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,8 +8,13 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.v7.app.AlertDialog;
-import android.text.format.Formatter;
 import android.util.Log;
+
+import com.andrea.pcstatus.AlertDialogManager;
+import com.andrea.pcstatus.ClientManager;
+import com.andrea.pcstatus.MainActivity;
+import com.andrea.pcstatus.SingletonBatteryStatus;
+import com.andrea.pcstatus.SingletonModel;
 
 import org.json.JSONException;
 
@@ -20,54 +26,60 @@ import java.net.URLConnection;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static android.content.Context.WIFI_SERVICE;
+import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_OR_BLUETOOTH;
 
 /**
  * Created by andrea on 26/07/2017.
  */
 
-class WiFiConnectionController {
+public class WiFiConnectionController {
 
     private static final String TAG = "WiFiController";
-    private MainActivity mainActivity;
-    private TimerTask task;
-    private boolean firstScan = true;
-    private Timer timer;
-    private AsyncTask<Void, Integer, String> threadReciveMessage = null;
+    @SuppressLint("StaticFieldLeak") //todo vedere bene cosa fa
+    private static MainActivity mainActivity;
+    private static TimerTask task;
+    private static boolean firstScan = true;
+    private static Timer timer;
+    private static String ip;
+    private static AsyncTask<Void, Integer, String> threadReciveMessage = null;
 
-    WiFiConnectionController(MainActivity mainActivity) {
-        this.mainActivity = mainActivity;
+    public WiFiConnectionController(MainActivity mainActivity, String ip) {
+        WiFiConnectionController.mainActivity = mainActivity;
+        WiFiConnectionController.ip = ip;
         checkWifiForStats();
     }
 
-    private class GetIp extends AsyncTask<Void, Integer, String> {
+    private static class GetIp extends AsyncTask<Void, Integer, String> {
 
-        static final int lower = 1;
-        static final int upper = 255;
+        static final int lower = 8080;
+        static final int upper = 8091;
         static final int timeout = 200;
 
         @Override
         protected String doInBackground(Void... voids) {
 
             if (isIpSaved()) {
-                return SingletonModel.getInstance().getIp();
+                return SingletonModel.getInstance().getUrl();
             } else {
-                String subnet;
                 publishProgress();
-                subnet = getMyIp();
-                for (int i = lower; i <= upper; i++) {
-                    URLConnection prova;
+                for (int i = lower; i < upper; i++) {
+                    URLConnection urlConnection;
                     try {
-                        prova = new URL("http://" + subnet + i + ":8080/greeting").openConnection();
-                        if (prova != null) {
-                            prova.setConnectTimeout(timeout);
-                            BufferedReader in = new BufferedReader(new InputStreamReader(prova.getInputStream()));
+                        String url = "http://" + ip + ":"+ i + "/greeting";
+                        Log.d(TAG, "provo con" + url);
+                        urlConnection = new URL(url).openConnection();
+                        if (urlConnection != null) {
+                            urlConnection.setConnectTimeout(timeout);
+                            new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                         }
-                        Log.d(TAG, "riuscito con " + subnet + i);
-                        SingletonModel.getInstance().setIp(subnet + i);
-                        return subnet + i;
+                        Log.d(TAG, "riuscito con " + url);
+                        SingletonModel.getInstance().setUrl(url);
+                        SingletonModel.getInstance().setIp(ip);
+                        SingletonModel.getInstance().setLatestIp(ip);
+                        return url;
                     } catch (IOException e) {
-                        // e.printStackTrace();
+                        if (i == 8090)
+                            ClientManager.startWifiClient(ip);
                     }
                 }
                 return null;
@@ -81,7 +93,7 @@ class WiFiConnectionController {
 
         @Override
         protected void onPostExecute(String objects) {
-            SingletonModel.getInstance().setIp(objects);
+            SingletonModel.getInstance().setUrl(objects);
             if (!mainActivity.isConnectionFlag()) {
                 scheduleTask();
                 mainActivity.setConnectionFlag(true);
@@ -89,7 +101,7 @@ class WiFiConnectionController {
             hideDialog();
         }
 
-        private String getMyIp() {
+      /*  private String getMyIp() {
             String subnet = "";
             WifiManager wm = (WifiManager) mainActivity.getApplicationContext().getSystemService(WIFI_SERVICE);
             String myIp = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
@@ -99,18 +111,18 @@ class WiFiConnectionController {
                 subnet += parts[i] + ".";
             }
             return subnet;
-        }
+        }*/
     }
 
-    private class GetStats extends AsyncTask<Void, Integer, String> {
+    private static class GetStats extends AsyncTask<Void, Integer, String> {
 
         @Override
         protected String doInBackground(Void... voids) {
-            URLConnection prova;
+            URLConnection urlConnection;
             try {
-                prova = new URL("http://" + SingletonModel.getInstance().getIp() + ":8080/greeting").openConnection();
-                prova.setConnectTimeout(200);
-                BufferedReader in = new BufferedReader(new InputStreamReader(prova.getInputStream()));
+                urlConnection = new URL(SingletonModel.getInstance().getUrl()).openConnection();
+                urlConnection.setConnectTimeout(200);
+                BufferedReader in = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
                 String inputLine;
                 String ris = null;
                 while ((inputLine = in.readLine()) != null)
@@ -127,6 +139,7 @@ class WiFiConnectionController {
         @Override
         protected void onCancelled() {
             SingletonModel.getInstance().setIp("");
+            SingletonModel.getInstance().setUrl("");
             if (firstScan) {
                 new GetIp().execute();
                 firstScan = false;
@@ -158,14 +171,14 @@ class WiFiConnectionController {
     }
 
 
-    private Boolean isIpSaved() {
+    public static Boolean isIpSaved() {
         String ip = SingletonModel.getInstance().getIp();
         return !ip.equals("");
     }
 
     private void checkWifiForServer() {
         WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (wifi.isWifiEnabled())
+        if (wifi != null && wifi.isWifiEnabled())
             new GetIp().execute();
         else
             createWifiServerError();
@@ -173,7 +186,7 @@ class WiFiConnectionController {
 
     private void checkWifiForStats() {
         WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-        if (wifi.isWifiEnabled())
+        if (wifi != null && wifi.isWifiEnabled())
             new GetStats().execute();
         else
             createWifiStatsError();
@@ -206,7 +219,9 @@ class WiFiConnectionController {
                 .setPositiveButton("WiFi", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                        wifi.setWifiEnabled(true);
+                        if (wifi != null) {
+                            wifi.setWifiEnabled(true);
+                        }
                         checkWifiForStats();
                         mainActivity.setConnectionFlag(false);
                     }
@@ -214,26 +229,26 @@ class WiFiConnectionController {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 mainActivity.setConnectionFlag(false);
-                mainActivity.taskCancel();
-                mainActivity.startBluetoothClient();
+                ClientManager.taskCancel();
+                ClientManager.startBluetoothClient();
             }
         });
         AlertDialog alert = builder.create();
         alert.show();
     }
 
-    private ProgressDialog dialog;
+    private static ProgressDialog dialog;
 
-    private void createDialog(String m) {
+    private static void createDialog(String m) {
         dialog = ProgressDialog.show(mainActivity, "",
                 m + ". Please wait...", true);
     }
 
-    private void hideDialog() {
+    private static void hideDialog() {
         dialog.hide();
     }
 
-    private void scheduleTask() {
+    private static void scheduleTask() {
         final Handler handler = new Handler();
         timer = new Timer();
         if (task == null) {
@@ -256,33 +271,21 @@ class WiFiConnectionController {
         }
     }
 
-    public void taskCancel() {
+    public static void taskCancel() {
         if (task != null) {
             timer.cancel();
             task.cancel();
             timer = null;
             task = null;
         }
+        mainActivity.setConnectionFlag(false);
     }
 
-    private void createErrorDialog() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
-        builder.setTitle("Non riesco a collegarmi al server")
-                .setMessage("Inserimento dell'IP manualmente o scansione automatica (circa un minuto)?")
-                .setCancelable(false)
-                .setPositiveButton("Auto", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        mainActivity.setConnectionFlag(false);
-                        new GetIp().execute();
-                    }
-                }).setNegativeButton("Try with Bluetooth", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                mainActivity.setConnectionFlag(false);
-                mainActivity.startBluetoothClient();
-            }
-        }).setCancelable(true);
-        AlertDialog alert = builder.create();
-        alert.show();
+    private static void createErrorDialog() {
+        AlertDialogManager.alertBox("Non riesco a collegarmi al server", "PCstatus need a connection via WiFi or Bluetooth\n" +
+                "What you want to use?", REQUEST_WIFI_OR_BLUETOOTH);
+
     }
 }
+
+

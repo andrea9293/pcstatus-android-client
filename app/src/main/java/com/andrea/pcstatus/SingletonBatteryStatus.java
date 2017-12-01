@@ -4,6 +4,7 @@ import org.json.JSONException;
 
 import java.math.BigDecimal;
 import java.util.Observable;
+import java.util.Observer;
 
 public class SingletonBatteryStatus extends Observable {
     private static SingletonBatteryStatus ourInstance = new SingletonBatteryStatus();
@@ -19,34 +20,40 @@ public class SingletonBatteryStatus extends Observable {
     private String jsonStr;
     private String[] computerInfo;
     private String[] miscellaneous;
-
+    private String firstFileSystemLabel;
     private Float cpuLoad;
     private Float percRam;
-    private String[] avaibleFileSystem;
+    private Float[] avaibleFileSystem;
     private Float[] percPerThread;
-
+    private int batteryPerc;
 
     private SingletonBatteryStatus() {
     }
 
-    void setJsonStr(String jsonStr) throws JSONException {
+    public void setJsonStr(String jsonStr) throws JSONException {
         this.jsonStr = jsonStr;
-        new jsonParser(jsonStr);
+        new JsonParser(jsonStr);
     }
 
     public String getDisks() {
-        return arrayStringToString(disks);
+        return arrayStringToString(disks, "\n");
     }
 
-    public String getCpu() {
-        return arrayStringToString(cpu);
+    public String getCpuInfo() {
+        return arrayStringToString(cpu,"");
     }
 
-    public void setCpu(String[] cpu) {
+    public void setCpuInfo(String[] cpu) {
         this.cpu = cpu;
     }
 
+    public String getFirstFilesystemLabel(){
+        return firstFileSystemLabel;
+    }
+
     public void setDisks(String[] disks) {
+        firstFileSystemLabel = disks[0].substring(disks[0].indexOf("(") + 1);
+        firstFileSystemLabel = firstFileSystemLabel.substring(0,Math.min(firstFileSystemLabel.length(),2));
         this.disks = disks;
     }
 
@@ -60,7 +67,7 @@ public class SingletonBatteryStatus extends Observable {
     }
 
     public String getBattery() {
-        return arrayStringToString(battery);
+        return arrayStringToString(battery,"");
     }
 
     public void setComputerInfo(String[] strings) {
@@ -68,11 +75,11 @@ public class SingletonBatteryStatus extends Observable {
     }
 
     public String getComputerInfo() {
-        return arrayStringToString(computerInfo);
+        return arrayStringToString(computerInfo,"");
     }
 
-    void addingObserver(MainActivity mainActivity) {
-        addObserver(mainActivity);
+    public void addingObserver(Observer observer) {
+        addObserver(observer);
     }
 
     public void notifyMyObservers() {
@@ -85,22 +92,22 @@ public class SingletonBatteryStatus extends Observable {
     }
 
     public String getMiscellaneous() {
-        return arrayStringToString(miscellaneous);
+        return arrayStringToString(miscellaneous, "");
     }
 
-    private String arrayStringToString(String[] arrayString) {
+    private String arrayStringToString(String[] arrayString, String space) {
         if (arrayString != null) {
             StringBuilder toString = new StringBuilder();
             for (int i = 0; i < arrayString.length; i++) {
-                toString.append(arrayString[i] + "\n");
+                toString.append(arrayString[i] + "\n" + space);
             }
             return toString.toString();
         } else
             return null;
     }
 
-    public void setCpuLoad(String cpuLoad) {
-        this.cpuLoad = Float.parseFloat(cpuLoad);
+    public void setCpuLoad(Float cpuLoad) {
+        this.cpuLoad = cpuLoad;
     }
 
     public Float getCpuLoad() {
@@ -115,11 +122,11 @@ public class SingletonBatteryStatus extends Observable {
         return round(percRam, 2);
     }
 
-    public String[] getAvaibleFileSystem() {
+    public Float[] getAvaibleFileSystem() {
         return avaibleFileSystem;
     }
 
-    public void setAvaibleFileSystem(String[] avaibleFileSystem) {
+    public void setAvaibleFileSystem(Float[] avaibleFileSystem) {
         this.avaibleFileSystem = avaibleFileSystem;
     }
 
@@ -129,16 +136,23 @@ public class SingletonBatteryStatus extends Observable {
         return Float.parseFloat(bd.toString());
     }
 
-    public void setPercPerThread(String percPerThread) {
-        String[] tmpStr = percPerThread.split("\n");
-        Float[] tmpFlo = new Float[tmpStr.length];
-        for (int i = 0; i < tmpStr.length; i++) {
-            tmpFlo[i] = Float.valueOf(tmpStr[i]);
-        }
-        this.percPerThread=tmpFlo;
+    public void setPercPerThread(Float[] percPerThread) {
+        this.percPerThread=percPerThread;
     }
 
     public Float[] getPercPerThread() {
         return percPerThread;
+    }
+
+    /**
+     * setter for battery percentage
+     * @param batteryPerc is percentage of battery
+     */
+    void setBatteryPerc(String batteryPerc) {
+        this.batteryPerc = Integer.parseInt(batteryPerc);
+    }
+
+    public Integer getBatteryPerc() {
+        return batteryPerc;
     }
 }
