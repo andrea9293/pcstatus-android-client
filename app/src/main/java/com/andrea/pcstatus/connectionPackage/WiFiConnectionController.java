@@ -100,18 +100,6 @@ public class WiFiConnectionController {
             }
             hideDialog();
         }
-
-      /*  private String getMyIp() {
-            String subnet = "";
-            WifiManager wm = (WifiManager) mainActivity.getApplicationContext().getSystemService(WIFI_SERVICE);
-            String myIp = Formatter.formatIpAddress(wm.getConnectionInfo().getIpAddress());
-            String parts[] = myIp.split("\\.");
-
-            for (int i = 0; i < parts.length - 1; i++) {
-                subnet += parts[i] + ".";
-            }
-            return subnet;
-        }*/
     }
 
     private static class GetStats extends AsyncTask<Void, Integer, String> {

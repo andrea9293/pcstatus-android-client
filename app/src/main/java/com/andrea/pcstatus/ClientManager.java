@@ -1,5 +1,7 @@
 package com.andrea.pcstatus;
 
+import android.annotation.SuppressLint;
+
 import com.andrea.pcstatus.connectionPackage.BluetoothConnectionController;
 import com.andrea.pcstatus.connectionPackage.WiFiConnectionController;
 
@@ -9,8 +11,9 @@ import com.andrea.pcstatus.connectionPackage.WiFiConnectionController;
 
 public class ClientManager {
     private static WiFiConnectionController wiFiConnectionController;
-    public static BluetoothConnectionController bluetoothConnectionController;
-    public static MainActivity mainActivity;
+    static BluetoothConnectionController bluetoothConnectionController;
+    @SuppressLint("StaticFieldLeak")
+    static MainActivity mainActivity;
 
     public static void startWifiClient(String ip) {
         taskCancel();
@@ -24,7 +27,7 @@ public class ClientManager {
 
     public static void taskCancel() {
         if (wiFiConnectionController != null) {
-            wiFiConnectionController.taskCancel();
+            WiFiConnectionController.taskCancel();
             wiFiConnectionController = null;
         }
         if (bluetoothConnectionController != null) {
@@ -32,5 +35,4 @@ public class ClientManager {
             bluetoothConnectionController = null;
         }
     }
-
 }

@@ -1,4 +1,4 @@
-package com.andrea.pcstatus.viewsPackage.charts;
+package com.andrea.pcstatus.charts;
 
 import android.graphics.Color;
 

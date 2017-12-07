@@ -11,11 +11,11 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.andrea.pcstatus.viewsPackage.charts.InterfaceChart;
-import com.andrea.pcstatus.viewsPackage.charts.LineChartMaker;
-import com.andrea.pcstatus.viewsPackage.charts.LineChartMakerExtender;
-import com.andrea.pcstatus.viewsPackage.charts.MultipleLineChartMaker;
-import com.andrea.pcstatus.viewsPackage.charts.PieChartMaker;
+import com.andrea.pcstatus.charts.InterfaceChart;
+import com.andrea.pcstatus.charts.LineChartMaker;
+import com.andrea.pcstatus.charts.LineChartMakerExtender;
+import com.andrea.pcstatus.charts.MultipleLineChartMaker;
+import com.andrea.pcstatus.charts.PieChartMaker;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -173,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu_with_scan, menu);
+        getMenuInflater().inflate(R.menu.main_menu, menu);
         rescanButton = menu.findItem(R.id.rescanMenuButton);
         rescanButton.setVisible(true);
         return true;
@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-            case R.id.settingsMenuButton:
+            case R.id.infoMenuButton:
                 //your action
                 break;
             case R.id.rescanMenuButton:

@@ -1,5 +1,6 @@
 package com.andrea.pcstatus;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
@@ -19,7 +20,8 @@ import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_O
  */
 
 public class AlertDialogManager {
-    public static MainActivity mainActivity;
+    @SuppressLint("StaticFieldLeak")
+    static MainActivity mainActivity;
 
     public enum AlertRequest {
         REQUEST_ERROR_BLUETOOTH,
@@ -42,7 +44,7 @@ public class AlertDialogManager {
                 public void onClick(DialogInterface dialogInterface, int i) {
                     wifiIpRequest();
                 }
-            }).show();
+            }).setCancelable(false).show();
         } else if (alertRequest == REQUEST_ERROR_BLUETOOTH) {
             new AlertDialog.Builder(mainActivity)
                     .setTitle(title)
@@ -56,7 +58,7 @@ public class AlertDialogManager {
                 public void onClick(DialogInterface dialogInterface, int i) {
                     wifiIpRequest();
                 }
-            }).show();
+            }).setCancelable(false).show();
         } else if (alertRequest == REQUEST_BASIC) {
             new AlertDialog.Builder(mainActivity)
                     .setTitle(title)
@@ -70,7 +72,7 @@ public class AlertDialogManager {
                 public void onClick(DialogInterface dialogInterface, int i) {
                     //do nothing
                 }
-            }).show();
+            }).setCancelable(false).show();
         }
 
     }
