@@ -1,6 +1,5 @@
 package com.andrea.pcstatus;
 
-import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
@@ -17,11 +16,11 @@ import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_O
 
 /**
  * Created by andre on 15/11/2017.
+ *
  */
 
 public class AlertDialogManager {
-    @SuppressLint("StaticFieldLeak")
-    static MainActivity mainActivity;
+    static MainController mainController;
 
     public enum AlertRequest {
         REQUEST_ERROR_BLUETOOTH,
@@ -32,7 +31,7 @@ public class AlertDialogManager {
     public static void alertBox(String title, String message, AlertRequest alertRequest) {
 
         if (alertRequest == REQUEST_WIFI_OR_BLUETOOTH) {
-            new AlertDialog.Builder(mainActivity)
+            new AlertDialog.Builder(mainController.getMainActivity())
                     .setTitle(title)
                     .setMessage(message)
                     .setPositiveButton("Bluetooth", new DialogInterface.OnClickListener() {
@@ -46,7 +45,7 @@ public class AlertDialogManager {
                 }
             }).setCancelable(false).show();
         } else if (alertRequest == REQUEST_ERROR_BLUETOOTH) {
-            new AlertDialog.Builder(mainActivity)
+            new AlertDialog.Builder(mainController.getMainActivity())
                     .setTitle(title)
                     .setMessage(message + " Press OK to try again.")
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -60,7 +59,7 @@ public class AlertDialogManager {
                 }
             }).setCancelable(false).show();
         } else if (alertRequest == REQUEST_BASIC) {
-            new AlertDialog.Builder(mainActivity)
+            new AlertDialog.Builder(mainController.getMainActivity())
                     .setTitle(title)
                     .setMessage(message + " Press OK to try again.")
                     .setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -79,17 +78,17 @@ public class AlertDialogManager {
 
     private static void wifiIpRequest() {
         //final String[] m_Text = {""};
-        AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        AlertDialog.Builder builder = new AlertDialog.Builder(mainController.getMainActivity());
         builder.setTitle("IP address");
         builder.setMessage("Insert ip address showed in top bar on PCstatus on your PC");
 
         // Set up the input
-        final EditText input = new EditText(mainActivity);
+        final EditText input = new EditText(mainController.getMainActivity());
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_PHONE);
         if (WiFiConnectionController.isIpSaved())
             input.setText(SingletonModel.getInstance().getIp());
 
-        CheckBox checkBox = new CheckBox(mainActivity);
+        CheckBox checkBox = new CheckBox(mainController.getMainActivity());
         checkBox.setText(R.string.latest_ip_address_saved);
 
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -103,7 +102,7 @@ public class AlertDialogManager {
                                             }
         );
 
-        LinearLayout layout = new LinearLayout(mainActivity);
+        LinearLayout layout = new LinearLayout(mainController.getMainActivity());
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT, LinearLayout.LayoutParams.FILL_PARENT));
        // LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);

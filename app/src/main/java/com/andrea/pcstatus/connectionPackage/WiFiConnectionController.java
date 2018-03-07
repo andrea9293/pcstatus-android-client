@@ -1,6 +1,5 @@
 package com.andrea.pcstatus.connectionPackage;
 
-import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,7 +11,7 @@ import android.util.Log;
 
 import com.andrea.pcstatus.AlertDialogManager;
 import com.andrea.pcstatus.ClientManager;
-import com.andrea.pcstatus.MainActivity;
+import com.andrea.pcstatus.MainController;
 import com.andrea.pcstatus.SingletonBatteryStatus;
 import com.andrea.pcstatus.SingletonModel;
 
@@ -30,21 +29,23 @@ import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_O
 
 /**
  * Created by andrea on 26/07/2017.
+ *
  */
 
 public class WiFiConnectionController {
 
     private static final String TAG = "WiFiController";
-    @SuppressLint("StaticFieldLeak") //todo vedere bene cosa fa
-    private static MainActivity mainActivity;
+    //private static MainActivity mainActivity;
+    private static MainController mainController;
     private static TimerTask task;
     private static boolean firstScan = true;
     private static Timer timer;
     private static String ip;
     private static AsyncTask<Void, Integer, String> threadReciveMessage = null;
 
-    public WiFiConnectionController(MainActivity mainActivity, String ip) {
-        WiFiConnectionController.mainActivity = mainActivity;
+    public WiFiConnectionController(MainController mainController, String ip) {
+        //WiFiConnectionController.mainActivity = mainActivity;
+        WiFiConnectionController.mainController = mainController;
         WiFiConnectionController.ip = ip;
         checkWifiForStats();
     }
@@ -94,9 +95,9 @@ public class WiFiConnectionController {
         @Override
         protected void onPostExecute(String objects) {
             SingletonModel.getInstance().setUrl(objects);
-            if (!mainActivity.isConnectionFlag()) {
+            if (!mainController.isConnectionFlag()) {
                 scheduleTask();
-                mainActivity.setConnectionFlag(true);
+                mainController.setConnectionFlag(true);
             }
             hideDialog();
         }
@@ -134,7 +135,7 @@ public class WiFiConnectionController {
             } else {
                 taskCancel();
                 createErrorDialog();
-                mainActivity.setTextView("Insert the Ip address showed on your PC");
+                mainController.setTextView("Insert the Ip address showed on your PC");
             }
         }
 
@@ -151,9 +152,9 @@ public class WiFiConnectionController {
                 e.printStackTrace();
             }
 
-            if (!mainActivity.isConnectionFlag()) {
+            if (!mainController.isConnectionFlag()) {
                 scheduleTask();
-                mainActivity.setConnectionFlag(true);
+                mainController.setConnectionFlag(true);
             }
         }
     }
@@ -165,7 +166,7 @@ public class WiFiConnectionController {
     }
 
     private void checkWifiForServer() {
-        WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifi = (WifiManager) mainController.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (wifi != null && wifi.isWifiEnabled())
             new GetIp().execute();
         else
@@ -173,7 +174,7 @@ public class WiFiConnectionController {
     }
 
     private void checkWifiForStats() {
-        WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        WifiManager wifi = (WifiManager) mainController.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (wifi != null && wifi.isWifiEnabled())
             new GetStats().execute();
         else
@@ -181,7 +182,8 @@ public class WiFiConnectionController {
     }
 
     private void createWifiServerError() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        //final AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(mainController.getApplicationContext());
         builder.setTitle("Errore")
                 .setMessage("Il WiFi risulta spento. Accendere il Wifi Per utilizzare BatteryStatus")
                 .setCancelable(false)
@@ -200,23 +202,24 @@ public class WiFiConnectionController {
     }
 
     private void createWifiStatsError() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        //final AlertDialog.Builder builder = new AlertDialog.Builder(mainActivity);
+        final AlertDialog.Builder builder = new AlertDialog.Builder(mainController.getApplicationContext());
         builder.setTitle("Errore - Il WiFi risulta spento")
                 .setMessage("Per utilizzare PCstatus è necessaria una connessione alla stessa rete WiFi del PC oppure una connessione bluetooth con il computer\n\nAccendere il Wifi e riprovare oppure utilizzare il bluetooth?")
                 .setCancelable(false)
                 .setPositiveButton("WiFi", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        WifiManager wifi = (WifiManager) mainActivity.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                        WifiManager wifi = (WifiManager) mainController.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                         if (wifi != null) {
                             wifi.setWifiEnabled(true);
                         }
                         checkWifiForStats();
-                        mainActivity.setConnectionFlag(false);
+                        mainController.setConnectionFlag(false);
                     }
                 }).setNegativeButton("Bluetooth", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                mainActivity.setConnectionFlag(false);
+                mainController.setConnectionFlag(false);
                 ClientManager.taskCancel();
                 ClientManager.startBluetoothClient();
             }
@@ -228,7 +231,7 @@ public class WiFiConnectionController {
     private static ProgressDialog dialog;
 
     private static void createDialog(String m) {
-        dialog = ProgressDialog.show(mainActivity, "",
+        dialog = ProgressDialog.show(mainController.getMainActivity(), "",
                 m + ". Please wait...", true);
     }
 
@@ -266,7 +269,7 @@ public class WiFiConnectionController {
             timer = null;
             task = null;
         }
-        mainActivity.setConnectionFlag(false);
+        mainController.setConnectionFlag(false);
     }
 
     private static void createErrorDialog() {

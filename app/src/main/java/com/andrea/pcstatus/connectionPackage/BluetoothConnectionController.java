@@ -9,7 +9,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import com.andrea.pcstatus.AlertDialogManager;
-import com.andrea.pcstatus.MainActivity;
+import com.andrea.pcstatus.MainController;
 import com.andrea.pcstatus.SingletonBatteryStatus;
 import com.andrea.pcstatus.SingletonModel;
 
@@ -32,23 +32,25 @@ import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_O
 
 /**
  * Created by andre on 29/07/2017.
+ *
  */
 
 public class BluetoothConnectionController {
     private static final String TAG = "BluetoothConnection";
-    private BluetoothAdapter btAdapter = null;
-    private BluetoothSocket btSocket = null;
+    private static BluetoothAdapter btAdapter = null;
+    private static BluetoothSocket btSocket = null;
     // Well known SPP UUID
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-    private String address = null;
-    private MainActivity mainActivity;
-    private TimerTask task;
+    //private static MainActivity mainActivity;
+    private static MainController mainController;
+    private static TimerTask task;
     private AsyncTask<Void, Integer, String> threadReciveMessage = null;
-    private boolean firstBoot = true;
-    private Timer timer;
+    private static boolean firstBoot = true;
+    private static Timer timer;
+    private int counter;
 
-    public BluetoothConnectionController(MainActivity mainActivity) {
-        this.mainActivity = mainActivity;
+    public BluetoothConnectionController(MainController mainController) {
+        BluetoothConnectionController.mainController = mainController;
         btAdapter = BluetoothAdapter.getDefaultAdapter();
         Log.d(TAG, "attivazione client bluetooth");
         // Check for Bluetooth support and then check to make sure it is turned on // Emulator doesn't support Bluetooth and will return null
@@ -56,24 +58,20 @@ public class BluetoothConnectionController {
             AlertDialogManager.alertBox("Fatal Error", "Bluetooth Not supported. Aborting.", REQUEST_BASIC);
         } else {
             if (!btAdapter.isEnabled()) {
-                mainActivity.enableBluetooth(btAdapter);
+                mainController.enableBluetooth();
             } else {
                 scheduleTask();
             }
         }
     }
 
-    private class ReciveMessage extends AsyncTask<Void, Integer, String> {
+    private static class ReciveMessage extends AsyncTask<Void, Integer, String> {
 
         @Override
         protected String doInBackground(Void... voids) {
-            if (firstBoot)
+            if (firstBoot) {
                 publishProgress();
-
-            /*f (address == null) {
-                address = getAddress();
-                return reciveMessage(this, address);*/
-
+            }
             if (!isAddressSaved()) {
                 Log.d(TAG, "non è salvato");
                 getAddress();
@@ -92,18 +90,12 @@ public class BluetoothConnectionController {
 
         @Override
         protected void onCancelled() {
-            taskCancel();
-            stopConnection();
-            SingletonModel.getInstance().setBluetoothAddress("");
-            if (firstBoot)
-                hideDialog();
-            AlertDialogManager.alertBox("ERRORE", "Server Bluetooth non trovato", REQUEST_WIFI_OR_BLUETOOTH);
-            mainActivity.setConnectionFlag(false);
+            connectionError();
         }
 
         @Override
         protected void onProgressUpdate(Integer... values) {
-            createDialog("Searching for bluetooth connection with server");
+            createDialog();
         }
 
         @Override
@@ -120,12 +112,12 @@ public class BluetoothConnectionController {
                 if (firstBoot)
                     hideDialog();
                 firstBoot = false;
-                mainActivity.setConnectionFlag(true);
+                mainController.setConnectionFlag(true);
             }
         }
     }
 
-    private String reciveMessage(ReciveMessage reciveMessage, String address) {
+    private static String reciveMessage(ReciveMessage reciveMessage, String address) {
 
             Log.d(TAG, "in reciveMessage stampo " + address);
             BluetoothDevice device = btAdapter.getRemoteDevice(address);
@@ -183,10 +175,7 @@ public class BluetoothConnectionController {
         return jStr[0];
     }
 
-    private String reciveMessage(ReciveMessage reciveMessage) {
-
-        Log.d(TAG, "in reciveMessage stampo " + address);
-
+    private static String reciveMessage(ReciveMessage reciveMessage) {
         final InputStream inStream;
         final String[] jStr = {null};
         try {
@@ -216,7 +205,7 @@ public class BluetoothConnectionController {
         return jStr[0];
     }
 
-    private void stopConnection() {
+    private static void stopConnection() {
         try {
             btSocket.close();
         } catch (IOException e2) {
@@ -224,15 +213,13 @@ public class BluetoothConnectionController {
         }
     }
 
-    private String getAddress() {
+    private static void getAddress() {
         String ris = null;
         List<BluetoothDevice> arrayListPairedBluetoothDevices = new ArrayList<>();
 
         Set<BluetoothDevice> pairedDevice = btAdapter.getBondedDevices();
         if (pairedDevice.size() > 0) {
-            for (BluetoothDevice device : pairedDevice) {
-                arrayListPairedBluetoothDevices.add(device);
-            }
+            arrayListPairedBluetoothDevices.addAll(pairedDevice);
         }
 
         for (int i = 0; i < arrayListPairedBluetoothDevices.size(); i++) {
@@ -264,22 +251,22 @@ public class BluetoothConnectionController {
         }
         Log.d(TAG, "stampo ris " + ris);
         SingletonModel.getInstance().setBluetoothAddress(ris);
-        return ris;
     }
 
-    private ProgressDialog dialog;
+    private static ProgressDialog dialog;
 
-    private void createDialog(String m) {
-        dialog = ProgressDialog.show(mainActivity, "",
-                m + ". Please wait...", true);
+    private static void createDialog() {
+        dialog = ProgressDialog.show(mainController.getMainActivity(), "",
+                "Searching for bluetooth connection with server" + ". Please wait...", true);
     }
 
-    private void hideDialog() {
+    private static void hideDialog() {
         dialog.hide();
     }
 
     public void scheduleTask() {
         final Handler handler = new Handler();
+        counter = 0;
         timer = new Timer();
         if (task == null) {
             task = new TimerTask() {
@@ -288,14 +275,15 @@ public class BluetoothConnectionController {
                     handler.post(new Runnable() {
                         public void run() {
                             if (threadReciveMessage == null || threadReciveMessage.getStatus() == AsyncTask.Status.FINISHED) {
+                                counter = 0;
                                 threadReciveMessage = new ReciveMessage().execute();
                             } else {
-                               /* if (threadReciveMessage == null) {
-                                } else {
-                                    if (threadReciveMessage.getStatus() == AsyncTask.Status.FINISHED) {
-                                    }
-                                }*/
-                                Log.d(TAG, "task in attesa di input");
+                                if(counter<10) {
+                                    Log.d(TAG, "task in attesa di input");
+                                    counter++;
+                                }else {
+                                    connectionError();
+                                }
                             }
                         }
                     });
@@ -305,7 +293,7 @@ public class BluetoothConnectionController {
         }
     }
 
-    public void taskCancel() {
+    public static void taskCancel() {
         if (task != null) {
             task.cancel();
             timer.cancel();
@@ -314,9 +302,20 @@ public class BluetoothConnectionController {
         }
     }
 
-    private Boolean isAddressSaved() {
+    private static Boolean isAddressSaved() {
         String bluetoothAddress = SingletonModel.getInstance().getBluetoothAddress();
         Log.d(TAG, "stampo in isAddres " + SingletonModel.getInstance().getBluetoothAddress() + " " + bluetoothAddress);
         return !bluetoothAddress.equals("");
+    }
+
+    private static void connectionError(){
+        taskCancel();
+        stopConnection();
+        SingletonModel.getInstance().setBluetoothAddress("");
+        if (firstBoot) {
+            hideDialog();
+        }
+        AlertDialogManager.alertBox("ERRORE", "Server Bluetooth non trovato", REQUEST_WIFI_OR_BLUETOOTH);
+        mainController.setConnectionFlag(false);
     }
 }

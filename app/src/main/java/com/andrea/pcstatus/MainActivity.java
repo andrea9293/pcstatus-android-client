@@ -1,6 +1,5 @@
 package com.andrea.pcstatus;
 
-import android.bluetooth.BluetoothAdapter;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -16,21 +15,24 @@ import com.andrea.pcstatus.charts.LineChartMaker;
 import com.andrea.pcstatus.charts.LineChartMakerExtender;
 import com.andrea.pcstatus.charts.MultipleLineChartMaker;
 import com.andrea.pcstatus.charts.PieChartMaker;
+import com.crashlytics.android.Crashlytics;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.util.Observable;
 import java.util.Observer;
 
+import io.fabric.sdk.android.Fabric;
+
 import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_OR_BLUETOOTH;
 
 //todo eliminare le selezioni nei charts
-//todo sfoltire main activity
 //todo dare un'occhiata al model che sta incasinato secondo me
 
 public class MainActivity extends AppCompatActivity implements Observer {
 
     private TextView mTextMessage;
-    private static final String TAG = "MainActivity";
-    private static final int REQUEST_ENABLE_BT = 1;
+    //private static final String TAG = "MainActivity";
+//    private static final int REQUEST_ENABLE_BT = 1;
     private BottomNavigationView navigation;
     private LineChartMaker systemLoadView;
     private LineChartMaker batteryView;
@@ -38,23 +40,24 @@ public class MainActivity extends AppCompatActivity implements Observer {
     private MenuItem rescanButton;
     private LinearLayout chartsLinearLayout;
     private PieChartMaker disksView;
-    private boolean connectionFlag = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        AlertDialogManager.mainActivity = this;
-        ClientManager.mainActivity = this;
-
+        // Obtain the FirebaseAnalytics instance.
+        FirebaseAnalytics.getInstance(this);
+        Fabric.with(this, new Crashlytics());
+        MainController mainController = new MainController(this);
+        AlertDialogManager.mainController = mainController;
+        ClientManager.mainController = mainController;
 
         cpuLoadView = new MultipleLineChartMaker(this);
         disksView = new PieChartMaker(this);
         systemLoadView = new LineChartMaker(this);
         batteryView = new LineChartMakerExtender(this);
         
-        chartsLinearLayout = (LinearLayout) findViewById(R.id.chartLayout);
+        chartsLinearLayout = findViewById(R.id.chartLayout);
         changeView(systemLoadView);
 
         SingletonModel.getInstance().setSharedPreferences(getApplicationContext());
@@ -62,9 +65,8 @@ public class MainActivity extends AppCompatActivity implements Observer {
         AlertDialogManager.alertBox("Choose WiFi or Bluetooth", "PCstatus need a connection via WiFi or Bluetooth\n" +
                 "What you want to use?", REQUEST_WIFI_OR_BLUETOOTH);
 
-
-        mTextMessage = (TextView) findViewById(R.id.message);
-        navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        mTextMessage = findViewById(R.id.message);
+        navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
     }
 
@@ -104,7 +106,6 @@ public class MainActivity extends AppCompatActivity implements Observer {
         }
 
     };
-
 
     private void changeView(InterfaceChart chart) {
         chartsLinearLayout.removeAllViews();
@@ -146,11 +147,11 @@ public class MainActivity extends AppCompatActivity implements Observer {
         }
     }
 
-    public void enableBluetooth(BluetoothAdapter btAdapter) {
+   /* public void enableBluetooth() {
         //Prompt user to turn on Bluetooth
         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-    }
+    }*/
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -197,16 +198,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
         return true;
     }
 
-    public void setConnectionFlag(boolean b) {
-        connectionFlag = b;
-        if (connectionFlag) {
-            rescanButton.setVisible(false);
-        } else {
-            rescanButton.setVisible(true);
-        }
-    }
-
-    public boolean isConnectionFlag() {
-        return connectionFlag;
+    public void rescanButtonVisibility(boolean b){
+        rescanButton.setVisible(b);
     }
 }
