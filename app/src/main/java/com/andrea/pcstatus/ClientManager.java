@@ -1,34 +1,32 @@
 package com.andrea.pcstatus;
 
 import com.andrea.pcstatus.connectionPackage.BluetoothConnectionController;
-import com.andrea.pcstatus.connectionPackage.WiFiConnectionController;
+import com.andrea.pcstatus.connectionPackage.WiFiController;
 
 /**
  * Created by andre on 13/11/2017.
  *
  */
 
-public class ClientManager {
-    private static WiFiConnectionController wiFiConnectionController;
-    static BluetoothConnectionController bluetoothConnectionController;
-    /*@SuppressLint("StaticFieldLeak")
-    static MainActivity mainActivity;*/
+class ClientManager {
+    private static WiFiController wiFiController;
+    private static BluetoothConnectionController bluetoothConnectionController;
     static MainController mainController;
 
-    public static void startWifiClient(String ip) {
+    static void startWifiClient(String ip) {
         taskCancel();
-        wiFiConnectionController = new WiFiConnectionController(mainController, ip);
+        wiFiController = new WiFiController(ip, mainController);
     }
 
-    public static void startBluetoothClient() {
+    static void startBluetoothClient() {
         taskCancel();
         bluetoothConnectionController = new BluetoothConnectionController(mainController);
     }
 
-    public static void taskCancel() {
-        if (wiFiConnectionController != null) {
-            WiFiConnectionController.taskCancel();
-            wiFiConnectionController = null;
+    static void taskCancel() {
+        if (wiFiController != null) {
+            WiFiController.taskCancel();
+            wiFiController = null;
         }
         if (bluetoothConnectionController != null) {
             BluetoothConnectionController.taskCancel();

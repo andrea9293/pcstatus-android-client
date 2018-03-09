@@ -1,14 +1,21 @@
 package com.andrea.pcstatus;
 
+import android.*;
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.andrea.pcstatus.charts.InterfaceChart;
 import com.andrea.pcstatus.charts.LineChartMaker;
@@ -31,8 +38,6 @@ import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_O
 public class MainActivity extends AppCompatActivity implements Observer {
 
     private TextView mTextMessage;
-    //private static final String TAG = "MainActivity";
-//    private static final int REQUEST_ENABLE_BT = 1;
     private BottomNavigationView navigation;
     private LineChartMaker systemLoadView;
     private LineChartMaker batteryView;
@@ -40,6 +45,8 @@ public class MainActivity extends AppCompatActivity implements Observer {
     private MenuItem rescanButton;
     private LinearLayout chartsLinearLayout;
     private PieChartMaker disksView;
+    private static final int MY_PERMISSIONS_REQUEST_CAMERA = 1;
+    private String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +75,16 @@ public class MainActivity extends AppCompatActivity implements Observer {
         mTextMessage = findViewById(R.id.message);
         navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+
+        //richiesta del permesso per la fotocamera
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(MainActivity.this,
+                    new String[]{android.Manifest.permission.CAMERA},
+                    MY_PERMISSIONS_REQUEST_CAMERA);
+        }
     }
 
     private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
@@ -147,25 +164,6 @@ public class MainActivity extends AppCompatActivity implements Observer {
         }
     }
 
-   /* public void enableBluetooth() {
-        //Prompt user to turn on Bluetooth
-        Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-    }*/
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_OK) {
-            ClientManager.bluetoothConnectionController.scheduleTask();
-        }
-        if (resultCode == RESULT_CANCELED) {
-            ClientManager.taskCancel();
-            AlertDialogManager.alertBox("Choose wifi or Bluetooth", "PCstatus need a connection via WiFi or bluetooth\n" +
-                    "What you want to use?", REQUEST_WIFI_OR_BLUETOOTH);
-        }
-    }
-
     @Override
     protected void onDestroy() {
         ClientManager.taskCancel();
@@ -200,5 +198,29 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
     public void rescanButtonVisibility(boolean b){
         rescanButton.setVisible(b);
+    }
+
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_CAMERA: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    //permessi concessi
+                    Log.d(TAG, "permessi concessi correttamente");
+
+                } else {
+                    //permessi negati
+                    printToastMessage("To scan QRcode PC status need permission granted for camera");
+                }
+            }
+
+        }
+    }
+
+    private void printToastMessage(String message) {
+        Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
     }
 }

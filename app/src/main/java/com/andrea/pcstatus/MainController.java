@@ -10,7 +10,6 @@ import android.content.Intent;
  */
 
 public class MainController {
-    private boolean connectionFlag = false;
     private static final int REQUEST_ENABLE_BT = 1;
     private MainActivity mainActivity;
 
@@ -19,25 +18,14 @@ public class MainController {
     }
 
     public void setConnectionFlag(boolean b) {
-        connectionFlag = b;
-        if (connectionFlag) {
-            //rescanButton.setVisible(false);
+        if (b) {
             mainActivity.rescanButtonVisibility(false);
         } else {
-            //rescanButton.setVisible(true);
             mainActivity.rescanButtonVisibility(true);
         }
     }
 
-    public boolean isConnectionFlag() {
-        return connectionFlag;
-    }
-
-    public void setTextView(String s) {
-        mainActivity.setTextView(s);
-    }
-
-    public Context getApplicationContext(){
+    Context getApplicationContext(){
         return mainActivity.getApplicationContext();
     }
 
