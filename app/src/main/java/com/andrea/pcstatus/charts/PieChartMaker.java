@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andrea.pcstatus.MainActivity;
+import com.andrea.pcstatus.R;
 import com.andrea.pcstatus.SingletonBatteryStatus;
 import com.github.mikephil.charting.animation.Easing;
 import com.github.mikephil.charting.charts.PieChart;
@@ -81,10 +82,10 @@ public class PieChartMaker implements  Observer, InterfaceChart {
 
         // NOTE: The order of the entries when being added to the entries array determines their position around the center of
         // the chart.
-        entries.add(new PieEntry(SingletonBatteryStatus.getInstance().getAvaibleFileSystem()[0], "Unused space"));
-        entries.add(new PieEntry(100f - SingletonBatteryStatus.getInstance().getAvaibleFileSystem()[0], "Used space"));
-        mChart.setCenterText("Drive " + SingletonBatteryStatus.getInstance().getFirstFilesystemLabel() + "\n" +
-                "Free space: " + SingletonBatteryStatus.getInstance().getAvaibleFileSystem()[0] +" %");
+        entries.add(new PieEntry(SingletonBatteryStatus.getInstance().getAvaibleFileSystem()[0], mainActivity.getString(R.string.unused_space)));
+        entries.add(new PieEntry(100f - SingletonBatteryStatus.getInstance().getAvaibleFileSystem()[0], mainActivity.getString(R.string.used_space)));
+        mChart.setCenterText(mainActivity.getString(R.string.drive) + SingletonBatteryStatus.getInstance().getFirstFilesystemLabel() + "\n" +
+                mainActivity.getString(R.string.free_space) + SingletonBatteryStatus.getInstance().getAvaibleFileSystem()[0] +" %");
         PieDataSet dataSet = new PieDataSet(entries, "");
 
         dataSet.setDrawIcons(false);

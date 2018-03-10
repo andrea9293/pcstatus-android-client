@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.andrea.pcstatus.AlertDialogManager;
 import com.andrea.pcstatus.MainController;
+import com.andrea.pcstatus.R;
 import com.andrea.pcstatus.SingletonBatteryStatus;
 import com.andrea.pcstatus.SingletonModel;
 
@@ -55,7 +56,8 @@ public class BluetoothConnectionController {
         Log.d(TAG, "attivazione client bluetooth");
         // Check for Bluetooth support and then check to make sure it is turned on // Emulator doesn't support Bluetooth and will return null
         if (btAdapter == null) {
-            AlertDialogManager.alertBox("Fatal Error", "Bluetooth Not supported. Aborting.", REQUEST_ERROR);
+            AlertDialogManager.alertBox(mainController.getMainActivity().getString(R.string.error),
+                    mainController.getMainActivity().getString(R.string.bluetooth_not_supported), REQUEST_ERROR);
         } else {
             if (!btAdapter.isEnabled()) {
                 mainController.enableBluetooth();
@@ -125,7 +127,7 @@ public class BluetoothConnectionController {
             try {
                 btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
             } catch (IOException e) {
-                AlertDialogManager.alertBox("1Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".", REQUEST_ERROR);
+                e.printStackTrace();
             }
 
             // Discovery is resource intensive.  Make sure it isn't going on
@@ -140,7 +142,7 @@ public class BluetoothConnectionController {
                 try {
                     btSocket.close();
                 } catch (IOException e2) {
-                    AlertDialogManager.alertBox("2Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".", REQUEST_ERROR);
+                   e2.printStackTrace();
                 }
             }
 
@@ -208,7 +210,7 @@ public class BluetoothConnectionController {
         try {
             btSocket.close();
         } catch (IOException e2) {
-            AlertDialogManager.alertBox("Fatal Error", "In onPause() and failed to close socket." + e2.getMessage() + ".", REQUEST_ERROR);
+            e2.printStackTrace();
         }
     }
 
@@ -227,7 +229,7 @@ public class BluetoothConnectionController {
             try {
                 btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
             } catch (IOException e) {
-                AlertDialogManager.alertBox("1Fatal Error", "In onResume() and socket create failed: " + e.getMessage() + ".", REQUEST_ERROR);
+                e.printStackTrace();
             }
 
             // Discovery is resource intensive.  Make sure it isn't going on
@@ -244,7 +246,7 @@ public class BluetoothConnectionController {
                 try {
                     btSocket.close();
                 } catch (IOException e2) {
-                    AlertDialogManager.alertBox("2Fatal Error", "In onResume() and unable to close socket during connection failure" + e2.getMessage() + ".", REQUEST_ERROR);
+                    e2.printStackTrace();
                 }
             }
         }
@@ -256,7 +258,8 @@ public class BluetoothConnectionController {
 
     private static void createDialog() {
         dialog = ProgressDialog.show(mainController.getMainActivity(), "",
-                "Searching for bluetooth connection with server" + ". Please wait...", true);
+                mainController.getMainActivity().getString(R.string.searching_bluetooth_server) +
+                        mainController.getMainActivity().getString(R.string.please_wait), true);
     }
 
     private static void hideDialog() {
@@ -314,7 +317,8 @@ public class BluetoothConnectionController {
         if (firstBoot) {
             hideDialog();
         }
-        AlertDialogManager.alertBox("ERRORE", "Server Bluetooth non trovato", REQUEST_WIFI_OR_BLUETOOTH);
+        AlertDialogManager.alertBox(mainController.getMainActivity().getString(R.string.error),
+                mainController.getMainActivity().getString(R.string.bluetooth_server_not_found), REQUEST_WIFI_OR_BLUETOOTH);
         mainController.setConnectionFlag(false);
     }
 }

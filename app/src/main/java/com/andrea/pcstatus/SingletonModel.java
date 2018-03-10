@@ -6,6 +6,7 @@ import android.util.Log;
 
 /**
  * Created by andre on 26/07/2017.
+ *
  */
 
 public class SingletonModel {
@@ -22,20 +23,10 @@ public class SingletonModel {
     private static final String PREFS_NAME = "MyPrefsFile";
 
 
-    public void setSharedPreferences(Context context) {
+    void setSharedPreferences(Context context) {
         sharedPreferences = context.getSharedPreferences(PREFS_NAME, 0);
     }
-/*
-    public void setIp(String ip) {
-        String prefServerIp = "prefServerIp";
-        sharedPreferences.edit().putString(prefServerIp, ip).apply();
-    }
 
-    public String getIp() {
-        String prefServerIp = "prefServerIp";
-        return sharedPreferences.getString(prefServerIp, "");
-    }
-*/
     public void setBluetoothAddress(String mac) {
         String prefBluetoothAddress= "prefBluetoothAddress";
         sharedPreferences.edit().putString(prefBluetoothAddress, mac).apply();

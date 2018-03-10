@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.andrea.pcstatus.MainActivity;
+import com.andrea.pcstatus.R;
 import com.andrea.pcstatus.SingletonBatteryStatus;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -40,7 +41,7 @@ public class LineChartMaker implements Observer, InterfaceChart {
 
         // enable description text
         mChart.getDescription().setEnabled(true);
-        mChart.getDescription().setText("CPU load");
+        mChart.getDescription().setText(mainActivity.getString(R.string.cpu_lod));
 
         // enable touch gestures
         mChart.setTouchEnabled(true);
@@ -102,7 +103,7 @@ public class LineChartMaker implements Observer, InterfaceChart {
 
     public LineDataSet createSet() {
 
-        LineDataSet set = new LineDataSet(null, "Current CPU load");
+        LineDataSet set = new LineDataSet(null, mainActivity.getString(R.string.current_cpu_load));
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         set.setColor(Color.RED);
         set.setCircleColor(Color.RED);

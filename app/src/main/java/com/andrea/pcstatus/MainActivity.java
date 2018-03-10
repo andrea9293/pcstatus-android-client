@@ -1,8 +1,6 @@
 package com.andrea.pcstatus;
 
-import android.*;
 import android.Manifest;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -32,9 +30,6 @@ import io.fabric.sdk.android.Fabric;
 
 import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_OR_BLUETOOTH;
 
-//todo eliminare le selezioni nei charts
-//todo dare un'occhiata al model che sta incasinato secondo me
-
 public class MainActivity extends AppCompatActivity implements Observer {
 
     private TextView mTextMessage;
@@ -43,6 +38,8 @@ public class MainActivity extends AppCompatActivity implements Observer {
     private LineChartMaker batteryView;
     private MultipleLineChartMaker cpuLoadView;
     private MenuItem rescanButton;
+    private MenuItem connected;
+    private MenuItem disconnected;
     private LinearLayout chartsLinearLayout;
     private PieChartMaker disksView;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 1;
@@ -63,14 +60,14 @@ public class MainActivity extends AppCompatActivity implements Observer {
         disksView = new PieChartMaker(this);
         systemLoadView = new LineChartMaker(this);
         batteryView = new LineChartMakerExtender(this);
-        
+
         chartsLinearLayout = findViewById(R.id.chartLayout);
         changeView(systemLoadView);
 
         SingletonModel.getInstance().setSharedPreferences(getApplicationContext());
         SingletonBatteryStatus.getInstance().addingObserver(MainActivity.this);
-        AlertDialogManager.alertBox("Choose WiFi or Bluetooth", "PCstatus need a connection via WiFi or Bluetooth\n" +
-                "What you want to use?", REQUEST_WIFI_OR_BLUETOOTH);
+        AlertDialogManager.alertBox(getString(R.string.choose_wifi_bluetooth), getString(R.string.PC_status_need_connection_via_wifi_or_bluetooth),
+                REQUEST_WIFI_OR_BLUETOOTH);
 
         mTextMessage = findViewById(R.id.message);
         navigation = findViewById(R.id.navigation);
@@ -174,6 +171,10 @@ public class MainActivity extends AppCompatActivity implements Observer {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
         rescanButton = menu.findItem(R.id.rescanMenuButton);
+        connected = menu.findItem(R.id.connected);
+        disconnected = menu.findItem(R.id.disconnected);
+        connected.setVisible(false);
+        disconnected.setVisible(true);
         rescanButton.setVisible(true);
         return true;
     }
@@ -182,12 +183,18 @@ public class MainActivity extends AppCompatActivity implements Observer {
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
+            case R.id.disconnected:
+                printToastMessage(getString(R.string.connection_lost));
+                break;
+            case R.id.connected:
+                printToastMessage(getString(R.string.connected_to_pc));
+                break;
             case R.id.infoMenuButton:
-                //your action
+                AlertDialogManager.aboutApplication();
                 break;
             case R.id.rescanMenuButton:
-                AlertDialogManager.alertBox("Choose wifi or Bluetooth", "PCstatus need a connection via WiFi or bluetooth\n" +
-                        "What you want to use?", REQUEST_WIFI_OR_BLUETOOTH);
+                AlertDialogManager.alertBox(getString(R.string.choose_wifi_bluetooth), getString(R.string.PC_status_need_connection_via_wifi_or_bluetooth),
+                        REQUEST_WIFI_OR_BLUETOOTH);
                 break;
             default:
                 return super.onOptionsItemSelected(item);
@@ -196,8 +203,10 @@ public class MainActivity extends AppCompatActivity implements Observer {
         return true;
     }
 
-    public void rescanButtonVisibility(boolean b){
+    public void isConnected(boolean b) {
         rescanButton.setVisible(b);
+        connected.setVisible(!b);
+        disconnected.setVisible(b);
     }
 
 
@@ -213,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
                 } else {
                     //permessi negati
-                    printToastMessage("To scan QRcode PC status need permission granted for camera");
+                    printToastMessage(getString(R.string.camera_permits_not_granted));
                 }
             }
 

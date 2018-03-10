@@ -3,6 +3,20 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/disconnected"
+        android:icon="@mipmap/disconnected"
+        android:orderInCategory="200"
+        android:title="@string/connected_to_pc"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/connected"
+        android:icon="@mipmap/connected"
+        android:orderInCategory="200"
+        android:title="@string/connection_lost"
+        app:showAsAction="ifRoom"/>
+
+    <item
         android:id="@+id/infoMenuButton"
         android:icon="@drawable/icon_info"
         android:orderInCategory="200"

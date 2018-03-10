@@ -10,4 +10,6 @@ public interface InterfaceChart {
     void addEntry();
     View getView();
     void animate();
+
+    //todo eliminare le selezioni nei charts
 }

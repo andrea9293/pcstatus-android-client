@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PC status</string>
+    <string name="app_name">PC-status</string>
     <string name="title_miscellaneous">System Load</string>
     <string name="title_hdd">Disks</string>
     <string name="title_pcinfo">System Information</string>
@@ -9,6 +9,9 @@
     <string name="settings">Settings</string>
     <string name="rescan">Rescan</string>
     <string name="latest_ip_address_saved">Latest IP address saved</string>
+    <string name="connection_lost">Connection lost with the PC</string>
+    <string name="connected_to_pc">Connected to PC</string>
+
 
     <string name="default_notification_channel_id" translatable="false">fcm_default_channel</string>
     <!--
@@ -16,4 +19,32 @@
         It should describe the category of notifications that will be sent through this channel
      -->
     <string name="default_notification_channel_name" translatable="true">News</string>
+    <string name="choose_wifi_bluetooth">Choose wifi or Bluetooth</string>
+    <string name="PC_status_need_connection_via_wifi_or_bluetooth">PC-status need a connection via WiFi or bluetooth\n\nWhat you want to use?</string>
+    <string name="camera_permits_not_granted">To scan QRcode PC status need permission granted for camera</string>
+    <string name="pc_status_about">PC-status is a client for Android that, by connecting to PCstatus on your computer, shows statistics about the use of PC resources.\n\nOpen source libraries:</string>
+    <string name="press_ok_try_again">Press OK to try again.</string>
+    <string name="cancel_try_wifi">CANCEL and try with WiFi</string>
+    <string name="cancel">CANCEL</string>
+    <string name="about">About</string>
+    <string name="error_wifi_off_message">To use PCstatus you need a connection to the same WiFi network as your PC or a Bluetooth connection to your computer\\n\\nTurn on the Wifi and try again or use bluetooth?</string>
+    <string name="error_wifi_off">Error - WiFi is off</string>
+    <string name="scan_qr_code">Scan Qrcode in PC-status on your PC (settings tab)</string>
+    <string name="searching_for_server">Searching for server. </string>
+    <string name="connected_to">connected to </string>
+    <string name="pc_not_found">PC not found</string>
+    <string name="error">Error</string>
+    <string name="please_wait">Please wait…</string>
+    <string name="error_connection_lost">Error - connection lost</string>
+    <string name="connection_to_server">Connection to sever. </string>
+    <string name="bluetooth_not_supported">Bluetooth not supported</string>
+    <string name="searching_bluetooth_server">Searching for bluetooth connection with server</string>
+    <string name="bluetooth_server_not_found">Bluetooth server not found</string>
+    <string name="unused_space">Unused space</string>
+    <string name="used_space">Used space</string>
+    <string name="drive">Drive </string>
+    <string name="free_space">Free space: </string>
+    <string name="current_battery_level">Current battery level</string>
+    <string name="cpu_lod">CPU load</string>
+    <string name="current_cpu_load">Current CPU load</string>
 </resources>

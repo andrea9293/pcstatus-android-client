@@ -1,10 +1,16 @@
 package com.andrea.pcstatus;
 
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.text.InputType;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.GridLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_ERROR;
@@ -30,109 +36,79 @@ public class AlertDialogManager {
             alertDialog = new AlertDialog.Builder(mainController.getMainActivity())
                     .setTitle(title)
                     .setMessage(message)
-                    .setPositiveButton("Bluetooth", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface arg0, int arg1) {
-                            ClientManager.startBluetoothClient();
-                        }
-                    }).setNegativeButton("WiFi", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    wifiIpRequest();
-                }
-            }).setCancelable(false).create();
+                    .setPositiveButton("Bluetooth", (arg0, arg1) ->
+                            ClientManager.startBluetoothClient()).setNegativeButton("WiFi", (dialogInterface, i) ->
+                            wifiIpRequest()).setCancelable(false).create();
         } else if (alertRequest == REQUEST_ERROR_BLUETOOTH) {
             alertDialog = new AlertDialog.Builder(mainController.getMainActivity())
                     .setTitle(title)
-                    .setMessage(message + " Press OK to try again.")
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface arg0, int arg1) {
-                            ClientManager.startBluetoothClient();
-                        }
-                    }).setNegativeButton("CANCEL and try with WiFi", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    wifiIpRequest();
-                }
-            }).setCancelable(false).create();
+                    .setMessage(message + " " + mainController.getMainActivity().getString(R.string.press_ok_try_again))
+                    .setPositiveButton("OK", (arg0, arg1) ->
+                            ClientManager.startBluetoothClient()).setNegativeButton(mainController.getMainActivity().getString(R.string.cancel_try_wifi),
+                            (dialogInterface, i) ->
+                            wifiIpRequest()).setCancelable(false).create();
         } else if (alertRequest == REQUEST_ERROR) {
             alertDialog = new AlertDialog.Builder(mainController.getMainActivity())
                     .setTitle(title)
                     .setMessage(message)
-                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface arg0, int arg1) {
+                    .setPositiveButton("OK", (arg0, arg1) -> {
 
-                        }
-                    }).setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    //do nothing
-                }
-            }).setCancelable(false).create();
+                    }).setNegativeButton(mainController.getMainActivity().getString(R.string.cancel), (dialogInterface, i) -> {
+                        //do nothing
+                    }).setCancelable(false).create();
         }
         if (alertDialog != null) {
             alertDialog.show();
         }
     }
 
-   /* private static void wifiIpRequest() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mainController.getMainActivity());
-        builder.setTitle("IP address");
-        builder.setMessage("Insert ip address showed in top bar on PCstatus on your PC");
+    public static void aboutApplication(){
+        LinearLayout linearLayout = new LinearLayout(mainController.getApplicationContext());
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        linearLayout.setPadding(70, 70,70,70);
 
-        // Set up the input
-        final EditText input = new EditText(mainController.getMainActivity());
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_PHONE);
-       // if (WiFiConnectionControllerOld.isIpSaved()) {
-            //input.setText(SingletonModel.getInstance().getIp());
-            input.setText("");
-        //}
-       /* CheckBox checkBox = new CheckBox(mainController.getMainActivity());
-        checkBox.setText(R.string.latest_ip_address_saved);
+        TextView about = new TextView(mainController.getApplicationContext());
+        about.setText(mainController.getMainActivity().getString(R.string.pc_status_about));
+        about.setTextSize(16f);
 
-        checkBox.setOnCheckedChangeListener(
-                new CompoundButton.OnCheckedChangeListener() {
+        TextView chart = new TextView(mainController.getApplicationContext());
+        chart.setText("MPAndroidChart");
+        chart.setTextColor(Color.BLUE);
+        chart.setPaintFlags(chart.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        chart.setOnClickListener(v ->
+                mainController.getMainActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/PhilJay/MPAndroidChart"))));
+        chart.setTextSize(16f);
 
-                    @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        if (isChecked)
-                            if (!SingletonModel.getInstance().getLatestIp().equals(""))
-                                input.setText(SingletonModel.getInstance().getLatestIp());
-                    }
-                }
-        );*/
-       /* EditText portInput = new EditText(mainController.getMainActivity());
-        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_CLASS_PHONE);
-        TextView ipTextView = new TextView(mainController.getApplicationContext());
-        ipTextView.setText("IP:");
-        TextView portTextView = new TextView(mainController.getApplicationContext());
-        portTextView.setText("Port:");
+        TextView barcodescanner = new TextView(mainController.getApplicationContext());
+        barcodescanner.setText("Dm7-Barcodescanner");
+        barcodescanner.setTextColor(Color.BLUE);
+        barcodescanner.setPaintFlags(barcodescanner.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        barcodescanner.setOnClickListener(v ->
+                mainController.getMainActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/dm77/barcodescanner"))));
+        barcodescanner.setTextSize(16f);
 
-        GridLayout gridLayout = new GridLayout(mainController.getApplicationContext());
-        gridLayout.setColumnCount(2);
-        gridLayout.addView(ipTextView);
-        gridLayout.addView(input);
-        gridLayout.addView(portTextView);
-        gridLayout.addView(portInput);
+        TextView icons = new TextView(mainController.getApplicationContext());
+        icons.setText("Icons8");
+        icons.setTextColor(Color.BLUE);
+        icons.setPaintFlags(icons.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
+        icons.setOnClickListener(v ->
+                mainController.getMainActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://icons8.com"))));
+        icons.setTextSize(16f);
 
-        builder.setCancelable(false);
-        builder.setView(gridLayout);
+        linearLayout.addView(about);
+        linearLayout.addView(chart);
+        linearLayout.addView(barcodescanner);
+        linearLayout.addView(icons);
 
-        // Set up the buttons
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                ClientManager.startWifiClient(input.getText().toString());
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+        AlertDialog alertDialog = new AlertDialog.Builder(mainController.getMainActivity())
+                .setTitle(mainController.getMainActivity().getString(R.string.about))
+                .setView(linearLayout)
+                .setPositiveButton("OK", (dialog, which) -> {
+                    // hide dialog
+                }).create();
 
-        builder.show();
-    }*/
+        alertDialog.show();
+    }
 
     private static void wifiIpRequest() {
         new ScanController(mainController);

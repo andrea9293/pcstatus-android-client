@@ -3,6 +3,7 @@ package com.andrea.pcstatus.charts;
 import android.graphics.Color;
 
 import com.andrea.pcstatus.MainActivity;
+import com.andrea.pcstatus.R;
 import com.andrea.pcstatus.SingletonBatteryStatus;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -18,9 +19,11 @@ import java.util.Observer;
  */
 
 public class LineChartMakerExtender extends LineChartMaker implements Observer, InterfaceChart {
+    private MainActivity mainActivity;
     public LineChartMakerExtender(MainActivity mainActivity) {
         super(mainActivity);
-        mChart.getDescription().setText("Current battery level");
+        this.mainActivity = mainActivity;
+        mChart.getDescription().setText(mainActivity.getString(R.string.current_battery_level));
     }
 
     @Override
@@ -51,7 +54,7 @@ public class LineChartMakerExtender extends LineChartMaker implements Observer, 
 
     @Override
     public LineDataSet createSet() {
-        LineDataSet set = new LineDataSet(null, "Current battery level");
+        LineDataSet set = new LineDataSet(null, mainActivity.getString(R.string.current_battery_level));
         set.setAxisDependency(YAxis.AxisDependency.LEFT);
         set.setColor(Color.rgb(139, 195, 74));
         set.setCircleColor(Color.rgb(139, 195, 74));

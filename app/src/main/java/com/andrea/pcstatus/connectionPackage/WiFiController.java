@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.andrea.pcstatus.AlertDialogManager;
 import com.andrea.pcstatus.MainController;
+import com.andrea.pcstatus.R;
 import com.andrea.pcstatus.SingletonBatteryStatus;
 import com.andrea.pcstatus.SingletonModel;
 
@@ -41,41 +42,72 @@ public class WiFiController {
         WiFiController.mainController = mainController;
         WiFiController.url = url;
         new VerifyIP().execute();
-        //checkWifiEnabled();
-        //new VerifyIP().execute(url);
     }
 
     private static class VerifyIP extends AsyncTask<Void, Integer, String> {
-        static final int timeout = 200;
+        private boolean connect = false;
+        private BufferedReader bufferedReader = null;
 
         @Override
         protected String doInBackground(Void... voids) {
             publishProgress();
             URLConnection urlConnection;
-            BufferedReader bufferedReader = null;
             try {
                 String url = WiFiController.url;
-                Log.d(TAG, "provo con" + url);
+                Log.d(TAG, "try url: " + url);
                 urlConnection = new URL(url).openConnection();
+
                 if (urlConnection != null) {
-                    urlConnection.setConnectTimeout(timeout);
+                    Log.w(TAG, urlConnection.getReadTimeout() + " " + urlConnection.getConnectTimeout());
+                    new Thread(()->{
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        if (!connect){
+                            this.cancel(true);
+                        }
+                    }).start();
                     bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    connect = true;
                 }
-                Log.d(TAG, "riuscito con " + url);
+                Log.d(TAG, mainController.getMainActivity().getString(R.string.connected_to) + url);
                 SingletonModel.getInstance().setUrl(url);
-                if (bufferedReader != null) {
-                    bufferedReader.close();
-                }
                 return url;
             } catch (IOException e) {
                 this.cancel(true);
                 return "";
+            } finally {
+                if (bufferedReader != null) {
+                    try {
+                        bufferedReader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
             }
         }
 
         @Override
         protected void onProgressUpdate(Integer... values) {
-            createDialog("Searching for server");
+            createDialog(mainController.getMainActivity().getString(R.string.searching_for_server));
+        }
+
+        @Override
+        protected void onCancelled() {
+            try {
+                if (bufferedReader != null) {
+                    bufferedReader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            hideDialog();
+            mainController.setConnectionFlag(false);
+            AlertDialogManager.alertBox(mainController.getMainActivity().getString(R.string.error), 
+                    mainController.getMainActivity().getString(R.string.pc_not_found), REQUEST_WIFI_OR_BLUETOOTH);
         }
 
         @Override
@@ -90,7 +122,7 @@ public class WiFiController {
 
     private static void createDialog(String m) {
         dialog = ProgressDialog.show(mainController.getMainActivity(), "",
-                m + ". Please wait...", true);
+                m + mainController.getMainActivity().getString(R.string.please_wait), true);
     }
 
     private static void hideDialog() {
@@ -155,12 +187,14 @@ public class WiFiController {
         protected void onCancelled() {
             taskCancel();
             mainController.setConnectionFlag(false);
-            AlertDialogManager.alertBox("Connection lost", "The connection to the PC was lost", REQUEST_WIFI_OR_BLUETOOTH);
+            AlertDialogManager.alertBox(mainController.getMainActivity().getString(R.string.error_connection_lost), 
+                    mainController.getMainActivity().getString(R.string.connection_lost), 
+                    REQUEST_WIFI_OR_BLUETOOTH);
         }
 
         @Override
         protected void onProgressUpdate(Integer... values) {
-            createDialog("Connection to sever");
+            createDialog(mainController.getMainActivity().getString(R.string.connection_to_server));
         }
 
         @Override

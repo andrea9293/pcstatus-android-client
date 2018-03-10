@@ -37,40 +37,33 @@ public class ScanController implements ZXingScannerView.ResultHandler {
 
     private void createWifiError() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(mainController.getMainActivity());
-        builder.setTitle("Errore - Il WiFi risulta spento")
-                .setMessage("Per utilizzare PCstatus è necessaria una connessione alla stessa rete WiFi del PC oppure una connessione bluetooth con il computer\n\nAccendere il Wifi e riprovare oppure utilizzare il bluetooth?")
+        builder.setTitle(mainController.getMainActivity().getString(R.string.error_wifi_off))
+                .setMessage(mainController.getMainActivity().getString(R.string.error_wifi_off_message))
                 .setCancelable(false)
-                .setPositiveButton("WiFi", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        WifiManager wifi = (WifiManager) mainController.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
-                        if (wifi != null) {
-                            wifi.setWifiEnabled(true);
-                        }
-                        checkWifiEnabled();
+                .setPositiveButton("WiFi", (dialog, id) -> {
+                    WifiManager wifi = (WifiManager) mainController.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+                    if (wifi != null) {
+                        wifi.setWifiEnabled(true);
                     }
-                }).setNegativeButton("Bluetooth", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                ClientManager.taskCancel();
-                ClientManager.startBluetoothClient();
-            }
-        });
+                    checkWifiEnabled();
+                }).setNegativeButton("Bluetooth", (dialogInterface, i) -> {
+                    ClientManager.taskCancel();
+                    ClientManager.startBluetoothClient();
+                });
         AlertDialog alert = builder.create();
         alert.show();
     }
 
     private void createScannerView() {
         AlertDialog.Builder builder = new AlertDialog.Builder(mainController.getMainActivity());
-        builder.setTitle("Scan Qrcode in PC-status on your PC");
+        builder.setTitle(mainController.getMainActivity().getString(R.string.scan_qr_code));
         mScannerView = new ZXingScannerView(mainController.getApplicationContext());   // Programmatically initialize the scanner view
         LinearLayout linearLayout = new LinearLayout(mainController.getApplicationContext());
         linearLayout.addView(mScannerView);
         builder.setView(linearLayout);                // Set the scanner view as the content view
         builder.setCancelable(false);
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface arg0, int arg1) {
-
-            }
+        builder.setNegativeButton("Cancel", (arg0, arg1) -> {
+            // hide alert
         });
 
         alertDialog = builder.create();

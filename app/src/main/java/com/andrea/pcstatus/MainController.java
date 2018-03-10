@@ -19,9 +19,9 @@ public class MainController {
 
     public void setConnectionFlag(boolean b) {
         if (b) {
-            mainActivity.rescanButtonVisibility(false);
+            mainActivity.isConnected(false);
         } else {
-            mainActivity.rescanButtonVisibility(true);
+            mainActivity.isConnected(true);
         }
     }
 
