@@ -13,6 +13,8 @@ import android.widget.GridLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.andrea.pcstatus.firebaseClasses.InAppBillingClass;
+
 import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_ERROR;
 import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_ERROR_BLUETOOTH;
 import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_OR_BLUETOOTH;
@@ -37,8 +39,9 @@ public class AlertDialogManager {
                     .setTitle(title)
                     .setMessage(message)
                     .setPositiveButton("Bluetooth", (arg0, arg1) ->
-                            ClientManager.startBluetoothClient()).setNegativeButton("WiFi", (dialogInterface, i) ->
-                            wifiIpRequest()).setCancelable(false).create();
+                            ClientManager.startBluetoothClient())
+                    .setNegativeButton("WiFi", (dialogInterface, i) ->
+                            wifiIpRequest()).setCancelable(true).create();
         } else if (alertRequest == REQUEST_ERROR_BLUETOOTH) {
             alertDialog = new AlertDialog.Builder(mainController.getMainActivity())
                     .setTitle(title)
@@ -112,5 +115,18 @@ public class AlertDialogManager {
 
     private static void wifiIpRequest() {
         new ScanController(mainController);
+    }
+
+    public static void inAppBillingAlert(InAppBillingClass billingClass){
+        AlertDialog alertDialog;
+        alertDialog = new AlertDialog.Builder(mainController.getMainActivity())
+                .setTitle("In app purchase")
+                .setMessage("new purchase or restore a previuos purchase?")
+                .setPositiveButton("new purchase", (arg0, arg1) -> {
+                    billingClass.purchaseItem();
+                }).setNegativeButton("restore purchase", (dialogInterface, i) -> {
+                    billingClass.restorePurchase();
+                }).setCancelable(true).create();
+        alertDialog.show();
     }
 }

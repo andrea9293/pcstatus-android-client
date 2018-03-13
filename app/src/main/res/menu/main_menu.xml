@@ -6,21 +6,28 @@
         android:id="@+id/disconnected"
         android:icon="@mipmap/disconnected"
         android:orderInCategory="200"
-        android:title="@string/connected_to_pc"
-        app:showAsAction="ifRoom"/>
+        android:title="@string/connection_lost"
+        app:showAsAction="always"/>
 
     <item
         android:id="@+id/connected"
         android:icon="@mipmap/connected"
         android:orderInCategory="200"
-        android:title="@string/connection_lost"
+        android:title="@string/connected_to_pc"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/billingButton"
+        android:icon="@drawable/icon_billings"
+        android:orderInCategory="200"
+        android:title="@string/remove_ads"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/infoMenuButton"
         android:icon="@drawable/icon_info"
         android:orderInCategory="200"
-        android:title="@string/settings"
+        android:title="@string/info"
         app:showAsAction="ifRoom"/>
 
     <item
@@ -28,5 +35,13 @@
         android:icon="@drawable/icon_rescan"
         android:orderInCategory="200"
         android:title="@string/rescan"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/helpMenuButton"
+        android:icon="@drawable/icon_help"
+        android:orderInCategory="200"
+        android:title="@string/help"
         app:showAsAction="ifRoom"/>
+
 </menu>

@@ -8,3 +8,5 @@
 /captures
 .externalNativeBuild
 app/fabric.properties
+app/release/app-release.apk
+app/release/output.json

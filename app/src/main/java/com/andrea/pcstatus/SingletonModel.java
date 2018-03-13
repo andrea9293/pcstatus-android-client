@@ -22,9 +22,18 @@ public class SingletonModel {
 
     private static final String PREFS_NAME = "MyPrefsFile";
 
-
     void setSharedPreferences(Context context) {
         sharedPreferences = context.getSharedPreferences(PREFS_NAME, 0);
+    }
+
+    public void setIsPremium(boolean isPremium){
+        String sharedIsPremium = "prefIsPremium";
+        sharedPreferences.edit().putBoolean(sharedIsPremium, isPremium).apply();
+    }
+
+    public boolean getIsPremium(){
+        String sharedIsPremium = "prefIsPremium";
+        return sharedPreferences.getBoolean(sharedIsPremium, false);
     }
 
     public void setBluetoothAddress(String mac) {

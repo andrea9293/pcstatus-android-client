@@ -61,7 +61,7 @@ public class WiFiController {
                     Log.w(TAG, urlConnection.getReadTimeout() + " " + urlConnection.getConnectTimeout());
                     new Thread(()->{
                         try {
-                            Thread.sleep(5000);
+                            Thread.sleep(3000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -105,6 +105,7 @@ public class WiFiController {
                 e.printStackTrace();
             }
             hideDialog();
+            SingletonModel.getInstance().setUrl("");
             mainController.setConnectionFlag(false);
             AlertDialogManager.alertBox(mainController.getMainActivity().getString(R.string.error), 
                     mainController.getMainActivity().getString(R.string.pc_not_found), REQUEST_WIFI_OR_BLUETOOTH);

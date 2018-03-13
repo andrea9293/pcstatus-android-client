@@ -29,7 +29,11 @@ public class ScanController implements ZXingScannerView.ResultHandler {
     private void checkWifiEnabled() {
         WifiManager wifi = (WifiManager) mainController.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         if (wifi != null && wifi.isWifiEnabled()) {
-            createScannerView();
+            if (SingletonModel.getInstance().getUrl().isEmpty()) {
+                createScannerView();
+            }else {
+                ClientManager.startWifiClient(SingletonModel.getInstance().getUrl());
+            }
         } else {
             createWifiError();
         }
