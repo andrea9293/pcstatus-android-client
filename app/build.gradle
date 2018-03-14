@@ -9,8 +9,8 @@ android {
         applicationId "com.andrea.pcstatus"
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 2
-        versionName "1.2alpha"
+        versionCode 3
+        versionName "1.0beta"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

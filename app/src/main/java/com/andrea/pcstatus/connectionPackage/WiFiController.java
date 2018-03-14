@@ -1,6 +1,5 @@
 package com.andrea.pcstatus.connectionPackage;
 
-import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
@@ -10,8 +9,6 @@ import com.andrea.pcstatus.MainController;
 import com.andrea.pcstatus.R;
 import com.andrea.pcstatus.SingletonBatteryStatus;
 import com.andrea.pcstatus.SingletonModel;
-
-import org.json.JSONException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -26,13 +23,11 @@ import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_O
 
 /**
  * Created by andre on 09/03/2018.
- *
  */
 
 public class WiFiController {
     private static final String TAG = "WiFiController";
     private static MainController mainController;
-    private static ProgressDialog dialog;
     private static TimerTask task;
     private static Timer timer;
     private static String url;
@@ -59,13 +54,13 @@ public class WiFiController {
 
                 if (urlConnection != null) {
                     Log.w(TAG, urlConnection.getReadTimeout() + " " + urlConnection.getConnectTimeout());
-                    new Thread(()->{
+                    new Thread(() -> {
                         try {
                             Thread.sleep(3000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        if (!connect){
+                        if (!connect) {
                             this.cancel(true);
                         }
                     }).start();
@@ -92,7 +87,7 @@ public class WiFiController {
 
         @Override
         protected void onProgressUpdate(Integer... values) {
-            createDialog(mainController.getMainActivity().getString(R.string.searching_for_server));
+            createDialog();
         }
 
         @Override
@@ -107,7 +102,7 @@ public class WiFiController {
             hideDialog();
             SingletonModel.getInstance().setUrl("");
             mainController.setConnectionFlag(false);
-            AlertDialogManager.alertBox(mainController.getMainActivity().getString(R.string.error), 
+            AlertDialogManager.alertBox(mainController.getMainActivity().getString(R.string.error),
                     mainController.getMainActivity().getString(R.string.pc_not_found), REQUEST_WIFI_OR_BLUETOOTH);
         }
 
@@ -121,13 +116,12 @@ public class WiFiController {
         }
     }
 
-    private static void createDialog(String m) {
-        dialog = ProgressDialog.show(mainController.getMainActivity(), "",
-                m + mainController.getMainActivity().getString(R.string.please_wait), true);
+    private static void createDialog() {
+        AlertDialogManager.progressBarDialog(mainController.getMainActivity().getString(R.string.searching_wifi_server));
     }
 
     private static void hideDialog() {
-        dialog.dismiss();
+        AlertDialogManager.hideProgressBarDialog();
     }
 
     public static void taskCancel() {
@@ -188,23 +182,19 @@ public class WiFiController {
         protected void onCancelled() {
             taskCancel();
             mainController.setConnectionFlag(false);
-            AlertDialogManager.alertBox(mainController.getMainActivity().getString(R.string.error_connection_lost), 
-                    mainController.getMainActivity().getString(R.string.connection_lost), 
+            AlertDialogManager.alertBox(mainController.getMainActivity().getString(R.string.error_connection_lost),
+                    mainController.getMainActivity().getString(R.string.connection_lost),
                     REQUEST_WIFI_OR_BLUETOOTH);
         }
 
         @Override
         protected void onProgressUpdate(Integer... values) {
-            createDialog(mainController.getMainActivity().getString(R.string.connection_to_server));
+            createDialog();
         }
 
         @Override
         protected void onPostExecute(String o) {
-            try {
-                SingletonBatteryStatus.getInstance().setJsonStr(o);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            SingletonBatteryStatus.getInstance().setJsonStr(o);
         }
     }
 }

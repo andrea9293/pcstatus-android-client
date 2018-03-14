@@ -31,7 +31,7 @@ public class InAppBillingClass {
     private MainActivity mainActivity;
     private ServiceConnection mServiceConn;
     private String TAG = "InAppBillingClassTAG";
-    
+    private static String SKU = "premium_upgrade";
 
     public static final int REQUEST_PREMIUM = 1001;
     private IabHelper mHelper;
@@ -74,8 +74,6 @@ public class InAppBillingClass {
         Bundle querySkus = new Bundle();
         querySkus.putStringArrayList("ITEM_ID_LIST", skuList);
     }
-
-
 
     public void unbindInAppBillingService(){
         if (mService != null) {

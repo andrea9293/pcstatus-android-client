@@ -6,7 +6,9 @@ import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.andrea.pcstatus.AlertDialogManager;
 import com.andrea.pcstatus.MainActivity;
+import com.andrea.pcstatus.R;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -23,6 +25,7 @@ import static com.andrea.pcstatus.firebaseClasses.AdsClass.AdsRequest.REQUEST_MI
 
 /**
  * Created by andre on 12/03/2018.
+ *
  */
 
 public class AdsClass implements RewardedVideoAdListener {
@@ -35,10 +38,8 @@ public class AdsClass implements RewardedVideoAdListener {
 
     private InterstitialAd mInterstitialAd;
     private CountDownTimer countDownTimer;
-    private String TAG = "AdsClass";
-    private RewardedVideoAd diskRewardAd;
-    private RewardedVideoAd batteryRewardAd;
-    private RewardedVideoAd miscellaneousRewardAd;
+    private String TAG = "AdsClassTAG";
+    private RewardedVideoAd rewardedVideoAd;
     private MainActivity mainActivity;
 
 
@@ -53,8 +54,8 @@ public class AdsClass implements RewardedVideoAdListener {
 
         AdView mAdView = new AdView(context);
         mAdView.setAdSize(AdSize.BANNER);
-        mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111"); // test ad
-        //mAdView.setAdUnitId(bannerAdId);
+        //mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111"); // test ad
+        mAdView.setAdUnitId(bannerAdId);
         mainLayout.addView(mAdView);
         mAdView.setAdListener(new AdListener() {
             @Override
@@ -64,8 +65,8 @@ public class AdsClass implements RewardedVideoAdListener {
         });
 
         mInterstitialAd = new InterstitialAd(context);
-        mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712"); // test ad
-        //mInterstitialAd.setAdUnitId(interstitialAdId);
+        //mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712"); // test ad
+        mInterstitialAd.setAdUnitId(interstitialAdId);
         mInterstitialAd.setAdListener(new AdListener() {
 
             @Override
@@ -85,27 +86,27 @@ public class AdsClass implements RewardedVideoAdListener {
             }
         });
 
-        diskRewardAd = MobileAds.getRewardedVideoAdInstance(context);
-        diskRewardAd.setRewardedVideoAdListener(this);
-        batteryRewardAd = MobileAds.getRewardedVideoAdInstance(context);
-        batteryRewardAd.setRewardedVideoAdListener(this);
-        miscellaneousRewardAd = MobileAds.getRewardedVideoAdInstance(context);
-        miscellaneousRewardAd.setRewardedVideoAdListener(this);
+        rewardedVideoAd = MobileAds.getRewardedVideoAdInstance(context);
+        rewardedVideoAd.setRewardedVideoAdListener(this);
 
         mAdView.loadAd(new AdRequest.Builder().build());
-        loadRewardedVideoAd();
     }
 
-    private void loadRewardedVideoAd() {
-        if (!diskRewardAd.isLoaded()){
-            diskRewardAd.loadAd(diskReward, new AdRequest.Builder().build());
+    public void loadRewardedVideoAd(AdsRequest adsRequest) {
+        if (adsRequest == REQUEST_BATTERY) {
+            if (!rewardedVideoAd.isLoaded()) {
+                rewardedVideoAd.loadAd(batteryReward, new AdRequest.Builder().build());
+            }
+        } else if (adsRequest == REQUEST_DISK) {
+            if (!rewardedVideoAd.isLoaded()) {
+                rewardedVideoAd.loadAd(diskReward, new AdRequest.Builder().build());
+            }
+        } else if (adsRequest == REQUEST_MISCELLANEOUS) {
+            if (!rewardedVideoAd.isLoaded()) {
+                rewardedVideoAd.loadAd(miscellaneousReward, new AdRequest.Builder().build());
+            }
         }
-        if (!batteryRewardAd.isLoaded()){
-            batteryRewardAd.loadAd(batteryReward, new AdRequest.Builder().build());
-        }
-        if (!miscellaneousRewardAd.isLoaded()){
-            miscellaneousRewardAd.loadAd(miscellaneousReward, new AdRequest.Builder().build());
-        }
+        createDialog();
     }
 
     /**
@@ -136,25 +137,16 @@ public class AdsClass implements RewardedVideoAdListener {
         countDownTimer.start();
     }
 
-    public void showVideoReward(AdsRequest adsRequest) {
-        if(adsRequest == REQUEST_BATTERY) {
-            if (batteryRewardAd.isLoaded()) {
-                batteryRewardAd.show();
-            }
-        }else if(adsRequest == REQUEST_MISCELLANEOUS){
-            if (miscellaneousRewardAd.isLoaded()) {
-                miscellaneousRewardAd.show();
-            }
-        }else if(adsRequest == REQUEST_DISK){
-            if (diskRewardAd.isLoaded()) {
-                diskRewardAd.show();
-            }
+    private void showVideoReward() {
+        if (rewardedVideoAd.isLoaded()) {
+            rewardedVideoAd.show();
         }
     }
 
     @Override
     public void onRewardedVideoAdLoaded() {
-
+        hideDialog();
+        showVideoReward();
     }
 
     @Override
@@ -169,7 +161,7 @@ public class AdsClass implements RewardedVideoAdListener {
 
     @Override
     public void onRewardedVideoAdClosed() {
-        loadRewardedVideoAd();
+
     }
 
     @Override
@@ -181,7 +173,6 @@ public class AdsClass implements RewardedVideoAdListener {
         } else if (rewardItem.getType().equals("miscellaneousReward")) {
             mainActivity.setMiscellaneousReward(true);
         }
-
         Toast.makeText(mainActivity, "Thank you :)", Toast.LENGTH_SHORT).show();
     }
 
@@ -192,6 +183,16 @@ public class AdsClass implements RewardedVideoAdListener {
 
     @Override
     public void onRewardedVideoAdFailedToLoad(int i) {
+        hideDialog();
+        Toast.makeText(mainActivity, mainActivity.getString(R.string.error_loading_ad), Toast.LENGTH_SHORT).show();
         Log.e(TAG, "error: " + i);
+    }
+
+    private void createDialog() {
+        AlertDialogManager.progressBarDialog(mainActivity.getString(R.string.loading_ads));
+    }
+
+    private void hideDialog() {
+        AlertDialogManager.hideProgressBarDialog();
     }
 }

@@ -1,16 +1,13 @@
 package com.andrea.pcstatus;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
-import android.text.InputType;
-import android.view.View;
-import android.widget.EditText;
-import android.widget.GridLayout;
+import android.view.Gravity;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.andrea.pcstatus.firebaseClasses.InAppBillingClass;
@@ -25,6 +22,7 @@ import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_O
 
 public class AlertDialogManager {
     static MainController mainController;
+    private static AlertDialog progressAlertDialog;
 
     public enum AlertRequest {
         REQUEST_ERROR_BLUETOOTH,
@@ -128,5 +126,29 @@ public class AlertDialogManager {
                     billingClass.restorePurchase();
                 }).setCancelable(true).create();
         alertDialog.show();
+    }
+
+    public static void progressBarDialog(String string){
+        ProgressBar progressBar = new ProgressBar(mainController.getMainActivity());
+        TextView textView = new TextView(mainController.getMainActivity());
+        textView.setText("                      Loading, please wait");
+        LinearLayout linearLayout = new LinearLayout(mainController.getMainActivity());
+        linearLayout.setGravity(Gravity.CENTER);
+        linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+        linearLayout.setPadding(50, 50,50,50);
+        linearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        linearLayout.addView(progressBar);
+        linearLayout.addView(textView);
+        progressAlertDialog = new AlertDialog.Builder(mainController.getMainActivity())
+                .setCancelable(false)
+                .setView(linearLayout)
+                .create();
+
+        progressAlertDialog.show();
+    }
+
+    public static void hideProgressBarDialog(){
+        progressAlertDialog.dismiss();
     }
 }

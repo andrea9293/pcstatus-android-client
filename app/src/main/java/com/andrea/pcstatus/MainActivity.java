@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
@@ -19,7 +18,6 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,17 +31,11 @@ import com.andrea.pcstatus.firebaseClasses.AdsClass;
 import com.andrea.pcstatus.firebaseClasses.AdsClass.AdsRequest;
 import com.andrea.pcstatus.firebaseClasses.InAppBillingClass;
 import com.crashlytics.android.Crashlytics;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 import com.google.firebase.analytics.FirebaseAnalytics;
-
-import com.google.android.gms.ads.InterstitialAd;
 
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.util.Observable;
 import java.util.Observer;
@@ -429,7 +421,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
         textView.setTextSize(20f);
         textView.setTextColor(Color.RED);
         textView.setTypeface(textView.getTypeface(), Typeface.BOLD_ITALIC);
-        textView.setOnClickListener(v -> adsClass.showVideoReward(adsRequest));
+        textView.setOnClickListener(v -> adsClass.loadRewardedVideoAd(adsRequest));
 
         TextView buyPremium = new TextView(getApplicationContext());
         buyPremium.setText("\n\nBuy the Premium version!");

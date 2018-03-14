@@ -1,6 +1,6 @@
 package com.andrea.pcstatus;
 
-import com.andrea.pcstatus.connectionPackage.BluetoothConnectionController;
+import com.andrea.pcstatus.connectionPackage.BluetoothController;
 import com.andrea.pcstatus.connectionPackage.WiFiController;
 
 /**
@@ -10,7 +10,7 @@ import com.andrea.pcstatus.connectionPackage.WiFiController;
 
 class ClientManager {
     private static WiFiController wiFiController;
-    private static BluetoothConnectionController bluetoothConnectionController;
+    private static BluetoothController bluetoothController;
     static MainController mainController;
 
     static void startWifiClient(String ip) {
@@ -20,7 +20,7 @@ class ClientManager {
 
     static void startBluetoothClient() {
         taskCancel();
-        bluetoothConnectionController = new BluetoothConnectionController(mainController);
+        bluetoothController = new BluetoothController(mainController);
     }
 
     static void taskCancel() {
@@ -28,9 +28,9 @@ class ClientManager {
             WiFiController.taskCancel();
             wiFiController = null;
         }
-        if (bluetoothConnectionController != null) {
-            BluetoothConnectionController.taskCancel();
-            bluetoothConnectionController = null;
+        if (bluetoothController != null) {
+            BluetoothController.taskCancel();
+            bluetoothController = null;
         }
     }
 }

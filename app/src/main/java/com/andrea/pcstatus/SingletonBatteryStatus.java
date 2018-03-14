@@ -28,8 +28,12 @@ public class SingletonBatteryStatus extends Observable {
     private SingletonBatteryStatus() {
     }
 
-    public void setJsonStr(String jsonStr) throws JSONException {
-        new JsonParser(jsonStr);
+    public void setJsonStr(String jsonStr) {
+        try {
+            new JsonParser(jsonStr);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     String getDisks() {
