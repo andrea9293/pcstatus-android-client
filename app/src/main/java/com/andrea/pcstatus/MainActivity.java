@@ -31,6 +31,7 @@ import com.andrea.pcstatus.firebaseClasses.AdsClass;
 import com.andrea.pcstatus.firebaseClasses.AdsClass.AdsRequest;
 import com.andrea.pcstatus.firebaseClasses.InAppBillingClass;
 import com.crashlytics.android.Crashlytics;
+import com.crashlytics.android.core.CrashlyticsCore;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 
@@ -72,7 +73,9 @@ public class MainActivity extends AppCompatActivity implements Observer {
         setContentView(R.layout.activity_main);
         // Obtain the FirebaseAnalytics instance.
         FirebaseAnalytics.getInstance(this);
-        Fabric.with(this, new Crashlytics());
+        CrashlyticsCore crashlyticsCore = new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build();
+        Fabric.with(this, new Crashlytics.Builder().core(crashlyticsCore).build());
+
         SingletonModel preferences = SingletonModel.getInstance();
         preferences.setSharedPreferences(getApplicationContext());
         //preferences.setIsPremium(true); // todo per rimuovere le pubbilcità
@@ -94,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
                 REQUEST_WIFI_OR_BLUETOOTH);
 
         mTextMessage = findViewById(R.id.message);
-        oldColors =  mTextMessage.getTextColors();
+        oldColors = mTextMessage.getTextColors();
         navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
@@ -336,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
     }
 
     public void setDiskReward(boolean diskReward) {
-        if (diskReward){
+        if (diskReward) {
             CountDownTimer countDownTimer = new CountDownTimer(60000 * 5, 50) {
                 @Override
                 public void onTick(long millisUnitFinished) {
@@ -359,7 +362,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
     }
 
     public void setBatteryReward(boolean batteryReward) {
-        if (batteryReward){
+        if (batteryReward) {
             CountDownTimer countDownTimer = new CountDownTimer(60000 * 5, 50) {
                 @Override
                 public void onTick(long millisUnitFinished) {
@@ -382,7 +385,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
     }
 
     public void setMiscellaneousReward(boolean miscellaneousReward) {
-        if (miscellaneousReward){
+        if (miscellaneousReward) {
             CountDownTimer countDownTimer = new CountDownTimer(60000 * 5, 50) {
                 @Override
                 public void onTick(long millisUnitFinished) {
@@ -400,7 +403,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
         navigation.setSelectedItemId(R.id.navigation_miscellaneous);
     }
 
-    private LinearLayout requestVideoReward(AdsRequest adsRequest){
+    private LinearLayout requestVideoReward(AdsRequest adsRequest) {
         TextView title = new TextView(getApplicationContext());
         title.setText("Available only with premium version");
         title.setTextSize(24f);
@@ -433,7 +436,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
         LinearLayout linearLayout = new LinearLayout(getApplicationContext());
         linearLayout.setOrientation(LinearLayout.VERTICAL);
-        linearLayout.setPadding(70, 70,70,70);
+        linearLayout.setPadding(70, 70, 70, 70);
         linearLayout.setGravity(Gravity.CENTER);
         linearLayout.addView(title);
         linearLayout.addView(desc);

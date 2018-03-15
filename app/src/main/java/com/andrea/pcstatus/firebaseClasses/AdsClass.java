@@ -25,7 +25,6 @@ import static com.andrea.pcstatus.firebaseClasses.AdsClass.AdsRequest.REQUEST_MI
 
 /**
  * Created by andre on 12/03/2018.
- *
  */
 
 public class AdsClass implements RewardedVideoAdListener {

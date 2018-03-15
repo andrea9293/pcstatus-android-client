@@ -241,10 +241,12 @@ public class BluetoothController {
             task = null;
             timer = null;
         }
-        try {
-            btSocket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (btSocket != null) {
+            try {
+                btSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

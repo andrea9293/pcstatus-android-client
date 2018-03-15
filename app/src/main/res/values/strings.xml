@@ -49,4 +49,5 @@
     <string name="loading_ads">Loading ad…</string>
     <string name="help">Help</string>
     <string name="error_loading_ad">Error with ad loading. Sorry :(</string>
+    <string name="loading">Loading, please wait</string>
 </resources>

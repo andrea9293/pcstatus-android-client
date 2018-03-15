@@ -6,8 +6,10 @@ import android.graphics.Paint;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.andrea.pcstatus.firebaseClasses.InAppBillingClass;
@@ -47,7 +49,7 @@ public class AlertDialogManager {
                     .setPositiveButton("OK", (arg0, arg1) ->
                             ClientManager.startBluetoothClient()).setNegativeButton(mainController.getMainActivity().getString(R.string.cancel_try_wifi),
                             (dialogInterface, i) ->
-                            wifiIpRequest()).setCancelable(false).create();
+                                    wifiIpRequest()).setCancelable(false).create();
         } else if (alertRequest == REQUEST_ERROR) {
             alertDialog = new AlertDialog.Builder(mainController.getMainActivity())
                     .setTitle(title)
@@ -63,10 +65,18 @@ public class AlertDialogManager {
         }
     }
 
-    public static void aboutApplication(){
+    static void aboutApplication() {
         LinearLayout linearLayout = new LinearLayout(mainController.getApplicationContext());
         linearLayout.setOrientation(LinearLayout.VERTICAL);
-        linearLayout.setPadding(70, 70,70,70);
+        linearLayout.setPadding(70, 70, 70, 70);
+
+        ImageView logo = new ImageView(mainController.getApplicationContext());
+        logo.setImageResource(R.drawable.logo);
+        logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        ;
+        logo.setAdjustViewBounds(true);
+        logo.setMaxHeight(500);
+        logo.setMaxWidth(500);
 
         TextView about = new TextView(mainController.getApplicationContext());
         about.setText(mainController.getMainActivity().getString(R.string.pc_status_about));
@@ -96,14 +106,18 @@ public class AlertDialogManager {
                 mainController.getMainActivity().startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://icons8.com"))));
         icons.setTextSize(16f);
 
+        linearLayout.addView(logo);
         linearLayout.addView(about);
         linearLayout.addView(chart);
         linearLayout.addView(barcodescanner);
         linearLayout.addView(icons);
 
+        ScrollView scrollView = new ScrollView(mainController.getApplicationContext());
+        scrollView.addView(linearLayout);
+
         AlertDialog alertDialog = new AlertDialog.Builder(mainController.getMainActivity())
                 .setTitle(mainController.getMainActivity().getString(R.string.about))
-                .setView(linearLayout)
+                .setView(scrollView)
                 .setPositiveButton("OK", (dialog, which) -> {
                     // hide dialog
                 }).create();
@@ -115,7 +129,7 @@ public class AlertDialogManager {
         new ScanController(mainController);
     }
 
-    public static void inAppBillingAlert(InAppBillingClass billingClass){
+    static void inAppBillingAlert(InAppBillingClass billingClass) {
         AlertDialog alertDialog;
         alertDialog = new AlertDialog.Builder(mainController.getMainActivity())
                 .setTitle("In app purchase")
@@ -128,14 +142,14 @@ public class AlertDialogManager {
         alertDialog.show();
     }
 
-    public static void progressBarDialog(String string){
+    public static void progressBarDialog(String string) {
         ProgressBar progressBar = new ProgressBar(mainController.getMainActivity());
         TextView textView = new TextView(mainController.getMainActivity());
-        textView.setText("                      Loading, please wait");
+        textView.setText(string);
         LinearLayout linearLayout = new LinearLayout(mainController.getMainActivity());
         linearLayout.setGravity(Gravity.CENTER);
         linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-        linearLayout.setPadding(50, 50,50,50);
+        linearLayout.setPadding(50, 50, 50, 50);
         linearLayout.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT));
 
         linearLayout.addView(progressBar);
@@ -144,11 +158,10 @@ public class AlertDialogManager {
                 .setCancelable(false)
                 .setView(linearLayout)
                 .create();
-
         progressAlertDialog.show();
     }
 
-    public static void hideProgressBarDialog(){
+    public static void hideProgressBarDialog() {
         progressAlertDialog.dismiss();
     }
 }
