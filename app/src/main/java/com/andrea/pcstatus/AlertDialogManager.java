@@ -12,6 +12,7 @@ import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.andrea.pcstatus.connectionPackage.ScanController;
 import com.andrea.pcstatus.firebaseClasses.InAppBillingClass;
 
 import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_ERROR;
@@ -41,7 +42,8 @@ public class AlertDialogManager {
                     .setPositiveButton("Bluetooth", (arg0, arg1) ->
                             ClientManager.startBluetoothClient())
                     .setNegativeButton("WiFi", (dialogInterface, i) ->
-                            wifiIpRequest()).setCancelable(true).create();
+                            wifiIpRequest())
+                    .setCancelable(true).create();
         } else if (alertRequest == REQUEST_ERROR_BLUETOOTH) {
             alertDialog = new AlertDialog.Builder(mainController.getMainActivity())
                     .setTitle(title)
@@ -49,7 +51,8 @@ public class AlertDialogManager {
                     .setPositiveButton("OK", (arg0, arg1) ->
                             ClientManager.startBluetoothClient()).setNegativeButton(mainController.getMainActivity().getString(R.string.cancel_try_wifi),
                             (dialogInterface, i) ->
-                                    wifiIpRequest()).setCancelable(false).create();
+                                    wifiIpRequest())
+                    .setCancelable(false).create();
         } else if (alertRequest == REQUEST_ERROR) {
             alertDialog = new AlertDialog.Builder(mainController.getMainActivity())
                     .setTitle(title)
@@ -58,7 +61,8 @@ public class AlertDialogManager {
 
                     }).setNegativeButton(mainController.getMainActivity().getString(R.string.cancel), (dialogInterface, i) -> {
                         //do nothing
-                    }).setCancelable(false).create();
+                    })
+                    .setCancelable(false).create();
         }
         if (alertDialog != null) {
             alertDialog.show();

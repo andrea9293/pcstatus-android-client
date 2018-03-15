@@ -10,7 +10,7 @@ import android.content.Intent;
  */
 
 public class MainController {
-    private static final int REQUEST_ENABLE_BT = 1;
+    static final int REQUEST_ENABLE_BT = 1;
     private MainActivity mainActivity;
 
     MainController(MainActivity mainActivity) {
@@ -25,7 +25,7 @@ public class MainController {
         }
     }
 
-    Context getApplicationContext(){
+    public Context getApplicationContext(){
         return mainActivity.getApplicationContext();
     }
 

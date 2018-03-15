@@ -1,4 +1,4 @@
-package com.andrea.pcstatus;
+package com.andrea.pcstatus.connectionPackage;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,6 +7,10 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.widget.LinearLayout;
 
+import com.andrea.pcstatus.ClientManager;
+import com.andrea.pcstatus.MainController;
+import com.andrea.pcstatus.R;
+import com.andrea.pcstatus.SingletonModel;
 import com.google.zxing.Result;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
@@ -21,7 +25,7 @@ public class ScanController implements ZXingScannerView.ResultHandler {
     private AlertDialog alertDialog;
     private MainController mainController;
 
-    ScanController(MainController mainController) {
+    public ScanController(MainController mainController) {
         this.mainController = mainController;
         checkWifiEnabled();
     }
@@ -48,6 +52,9 @@ public class ScanController implements ZXingScannerView.ResultHandler {
                     WifiManager wifi = (WifiManager) mainController.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                     if (wifi != null) {
                         wifi.setWifiEnabled(true);
+                        while (!wifi.isWifiEnabled()){
+                            Log.d(TAG, "waiting for wifi activation");
+                        }
                     }
                     checkWifiEnabled();
                 }).setNegativeButton("Bluetooth", (dialogInterface, i) -> {

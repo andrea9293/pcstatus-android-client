@@ -8,22 +8,22 @@ import com.andrea.pcstatus.connectionPackage.WiFiController;
  *
  */
 
-class ClientManager {
+public class ClientManager {
     private static WiFiController wiFiController;
     private static BluetoothController bluetoothController;
     static MainController mainController;
 
-    static void startWifiClient(String ip) {
+    public static void startWifiClient(String ip) {
         taskCancel();
         wiFiController = new WiFiController(ip, mainController);
     }
 
-    static void startBluetoothClient() {
+    public static void startBluetoothClient() {
         taskCancel();
         bluetoothController = new BluetoothController(mainController);
     }
 
-    static void taskCancel() {
+    public static void taskCancel() {
         if (wiFiController != null) {
             WiFiController.taskCancel();
             wiFiController = null;

@@ -44,6 +44,7 @@ import java.util.Observer;
 import io.fabric.sdk.android.Fabric;
 
 import static com.andrea.pcstatus.AlertDialogManager.AlertRequest.REQUEST_WIFI_OR_BLUETOOTH;
+import static com.andrea.pcstatus.MainController.REQUEST_ENABLE_BT;
 import static com.andrea.pcstatus.firebaseClasses.AdsClass.AdsRequest.*;
 
 public class MainActivity extends AppCompatActivity implements Observer {
@@ -326,6 +327,11 @@ public class MainActivity extends AppCompatActivity implements Observer {
                     Log.e("BILLINGS", "Failed to parse purchase data.");
                     e.printStackTrace();
                 }
+            }
+        }
+        if (requestCode == REQUEST_ENABLE_BT){
+            if (resultCode == RESULT_OK) {
+                ClientManager.startBluetoothClient();
             }
         }
     }
