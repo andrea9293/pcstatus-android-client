@@ -27,7 +27,7 @@ import static com.andrea.pcstatus.firebaseClasses.AdsClass.AdsRequest.REQUEST_MI
  * Created by andre on 12/03/2018.
  */
 
-public class AdsClass implements RewardedVideoAdListener {
+public class AdsClass /*implements RewardedVideoAdListener*/ {
 
     public enum AdsRequest {
         REQUEST_DISK,
@@ -38,7 +38,7 @@ public class AdsClass implements RewardedVideoAdListener {
     private InterstitialAd mInterstitialAd;
     private CountDownTimer countDownTimer;
     private String TAG = "AdsClassTAG";
-    private RewardedVideoAd rewardedVideoAd;
+    //private RewardedVideoAd rewardedVideoAd;
     private MainActivity mainActivity;
 
 
@@ -70,7 +70,7 @@ public class AdsClass implements RewardedVideoAdListener {
 
             @Override
             public void onAdLoaded() {
-                createTimer(3);
+                createTimer(1);
             }
 
             @Override
@@ -81,31 +81,10 @@ public class AdsClass implements RewardedVideoAdListener {
             @Override
             public void onAdClosed() {
                 mInterstitialAd.loadAd(new AdRequest.Builder().build());
-                createTimer(5);
             }
         });
-
-        rewardedVideoAd = MobileAds.getRewardedVideoAdInstance(context);
-        rewardedVideoAd.setRewardedVideoAdListener(this);
-
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
         mAdView.loadAd(new AdRequest.Builder().build());
-    }
-
-    public void loadRewardedVideoAd(AdsRequest adsRequest) {
-        if (adsRequest == REQUEST_BATTERY) {
-            if (!rewardedVideoAd.isLoaded()) {
-                rewardedVideoAd.loadAd(batteryReward, new AdRequest.Builder().build());
-            }
-        } else if (adsRequest == REQUEST_DISK) {
-            if (!rewardedVideoAd.isLoaded()) {
-                rewardedVideoAd.loadAd(diskReward, new AdRequest.Builder().build());
-            }
-        } else if (adsRequest == REQUEST_MISCELLANEOUS) {
-            if (!rewardedVideoAd.isLoaded()) {
-                rewardedVideoAd.loadAd(miscellaneousReward, new AdRequest.Builder().build());
-            }
-        }
-        createDialog();
     }
 
     /**
@@ -120,7 +99,7 @@ public class AdsClass implements RewardedVideoAdListener {
         countDownTimer = new CountDownTimer(time * 60000, 50) {
             @Override
             public void onTick(long millisUnitFinished) {
-
+                //Log.d(TAG, "rimane " + millisUnitFinished);
             }
 
             @Override
@@ -134,64 +113,5 @@ public class AdsClass implements RewardedVideoAdListener {
             }
         };
         countDownTimer.start();
-    }
-
-    private void showVideoReward() {
-        if (rewardedVideoAd.isLoaded()) {
-            rewardedVideoAd.show();
-        }
-    }
-
-    @Override
-    public void onRewardedVideoAdLoaded() {
-        hideDialog();
-        showVideoReward();
-    }
-
-    @Override
-    public void onRewardedVideoAdOpened() {
-
-    }
-
-    @Override
-    public void onRewardedVideoStarted() {
-
-    }
-
-    @Override
-    public void onRewardedVideoAdClosed() {
-
-    }
-
-    @Override
-    public void onRewarded(RewardItem rewardItem) {
-        if (rewardItem.getType().equals("diskReward")) {
-            mainActivity.setDiskReward(true);
-        } else if (rewardItem.getType().equals("batteryReward")) {
-            mainActivity.setBatteryReward(true);
-        } else if (rewardItem.getType().equals("miscellaneousReward")) {
-            mainActivity.setMiscellaneousReward(true);
-        }
-        Toast.makeText(mainActivity, "Thank you :)", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onRewardedVideoAdLeftApplication() {
-
-    }
-
-    @Override
-    public void onRewardedVideoAdFailedToLoad(int i) {
-        hideDialog();
-        Toast.makeText(mainActivity, mainActivity.getString(R.string.error_loading_ad), Toast.LENGTH_SHORT).show();
-        Log.e(TAG, "error: " + i);
-    }
-
-    private void createDialog() {
-        AlertDialogManager.progressBarDialog(mainActivity.getString(R.string.loading_ads));
-    }
-
-    private void hideDialog() {
-        AlertDialogManager.hideProgressBarDialog();
     }
 }

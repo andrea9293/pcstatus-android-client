@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "976133276841-d31tb9vtags57oqdvvfovnmoj210d3j0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.andrea.pcstatus",
+            "certificate_hash": "dbf3d150d39c18b498e3813ad2d4c9e15a6b1c9d"
+          }
+        },
+        {
           "client_id": "976133276841-l299g3arrb1j5lafgmj6g76653u5756q.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

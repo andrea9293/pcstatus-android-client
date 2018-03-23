@@ -144,9 +144,9 @@ public class WiFiController {
                         public void run() {
                             if (threadReciveMessage == null || (threadReciveMessage.getStatus() == AsyncTask.Status.FINISHED)) {
                                 threadReciveMessage = new GetStats().execute();
-                                Log.d(TAG, "task eseguito nel thread " + Thread.currentThread().getName());
+                                //Log.d(TAG, "task eseguito nel thread " + Thread.currentThread().getName());
                             } else {
-                                Log.d(TAG, "task in attesa di input nel thread " + Thread.currentThread().getName());
+                                //Log.d(TAG, "task in attesa di input nel thread " + Thread.currentThread().getName());
                             }
                         }
                     });

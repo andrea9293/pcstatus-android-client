@@ -31,7 +31,7 @@ public class SingletonModel {
         sharedPreferences.edit().putBoolean(sharedIsPremium, isPremium).apply();
     }
 
-    public boolean getIsPremium(){
+    boolean getIsPremium(){
         String sharedIsPremium = "prefIsPremium";
         return sharedPreferences.getBoolean(sharedIsPremium, false);
     }
@@ -56,14 +56,13 @@ public class SingletonModel {
         return sharedPreferences.getString(prefServerUrl, "");
     }
 
-    public void setLatestIp(String ip) {
-        String prefServerLatestIp = "prefServerLatestIp";
-        Log.d("singletonRoba", ip);
-        sharedPreferences.edit().putString(prefServerLatestIp, ip).apply();
+    public void setIsFirstBoot(boolean isFirstBoot){
+        String sharedIsFirstBoot = "prefIsFirstBoot";
+        sharedPreferences.edit().putBoolean(sharedIsFirstBoot, isFirstBoot).apply();
     }
 
-    public String getLatestIp() {
-        String prefServerLatestIp = "prefServerLatestIp ";
-        return sharedPreferences.getString(prefServerLatestIp , "");
+    public boolean getIsFirstBoot(){
+        String sharedIsFirstBoot = "prefIsFirstBoot";
+        return sharedPreferences.getBoolean(sharedIsFirstBoot, true);
     }
 }

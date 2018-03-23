@@ -77,7 +77,7 @@ public class AlertDialogManager {
         ImageView logo = new ImageView(mainController.getApplicationContext());
         logo.setImageResource(R.drawable.logo);
         logo.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        ;
+
         logo.setAdjustViewBounds(true);
         logo.setMaxHeight(500);
         logo.setMaxWidth(500);
