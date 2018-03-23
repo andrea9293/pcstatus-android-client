@@ -14,7 +14,8 @@
     <string name="choose_wifi_bluetooth">Choose wifi or Bluetooth</string>
     <string name="PC_status_need_connection_via_wifi_or_bluetooth">PC-status need a connection via WiFi or bluetooth\n\nWhat you want to use?</string>
     <string name="camera_permits_not_granted">To scan QRcode PC status need permission granted for camera</string>
-    <string name="pc_status_about">PC-status is a client for Android that, by connecting to PC-status on your computer, shows statistics about the use of PC resources.\n\nOpen source libraries:</string>
+    <string name="pc_status_about">PC-status is a client for Android that, by connecting to PC-status on your computer, shows statistics about the use of PC resources.</string>
+    <string name="open_libraries">\n\nOpen source libraries:</string>
     <string name="press_ok_try_again">Press OK to try again.</string>
     <string name="cancel_try_wifi">CANCEL and try with WiFi</string>
     <string name="cancel">Cancel</string>
@@ -50,4 +51,45 @@
     <string name="help">Help</string>
     <string name="error_loading_ad">Error with ad loading. Sorry :(</string>
     <string name="loading">Loading, please wait</string>
+
+    <string name="tutorial_steps">
+    WiFi connection\n
+    1.\t	On your PC, open PC-status and click on settings icon, now you can see a QR code\n
+    2.\t	Open PC-status - Android client and choose WiFi connection\n
+    3.\t	Scan QR code on you PC\n
+    4.\t	Done! ;)\n
+    \n
+    Bluetooth connection\n
+    1.\t	Pair with Bluetooth your Android phone with your Windows computer using Windows bluetooth settings\n
+    2.\t	Open PC-status for desktop on your PC\n
+    3.\t	Open PC-status - Android client and choose Bluetooth connection\n
+    4.\t	Done! ;)\n
+    </string>
+    <string name="support_developer">Then, if you want to support a little developer, you can buy premium version and remove all ads</string>
+    <string name="download_pc_status_desktop">Download PC-status for desktop</string>
+    <string name="need_pc_status_desktop">First of all, you need to download and start PC-status for desktop</string>
+    <string name="tutorial">Tutorial</string>
+    <string name="close_tutorial">Close tutorial</string>
+    <string name="view_in_browser">View this in your Browser</string>
+    <string name="buy_premium">Buy premium</string>
+
+    <!-- intro strings -->
+    <string name="first_tab_title">Download and execute PC-status for Desktop</string>
+    <string name="first_tab_desc">If you do not download yet PC-status fro desktop, download it on my GitHub Pages. Got to\n\nhttps://github.com/andrea9293/pcstatus/releases</string>
+
+    <string name="second_tab_title">WiFi connection</string>
+    <string name="second_tab_desc">1.\tOn your PC, open PC-status and click on settings icon, now you can see a QR code\n
+    2.\tOn PC-status - Android client choose WiFi connection\n
+    3.\tScan QR code on you PC\n
+    4.\tDone! ;)</string>
+
+    <string name="third_tab_title">Bluetooth connection</string>
+    <string name="third_tab_desc">1.\tPair with Bluetooth your Android phone with your Windows computer using Windows bluetooth settings\n
+    2.\tOpen PC-status for desktop on your PC\n
+    3.\tOn PC-status - Android client choose Bluetooth connection\n
+    4.\tDone! ;)</string>
+
+    <string name="forth_tab_title">Camera permission</string>
+    <string name="forth_tab_desc">PC-status need a permission to use camera for scan QR code in WiFi connection type</string>
+
 </resources>
