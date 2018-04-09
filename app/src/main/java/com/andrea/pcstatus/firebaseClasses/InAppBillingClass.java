@@ -75,7 +75,7 @@ public class InAppBillingClass {
         querySkus.putStringArrayList("ITEM_ID_LIST", skuList);
     }
 
-    
+    }
 
     public void unbindInAppBillingService(){
         if (mService != null) {
