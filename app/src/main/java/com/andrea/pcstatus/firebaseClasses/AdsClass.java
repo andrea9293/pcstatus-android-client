@@ -11,12 +11,12 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.InterstitialAd;
-import com.google.android.gms.ads.MobileAds;
 
 /**
  * Created by andre on 12/03/2018.
  */
 
+// this class is not uses anymore
 public class AdsClass /*implements RewardedVideoAdListener*/ {
 
     private InterstitialAd mInterstitialAd;
@@ -24,18 +24,16 @@ public class AdsClass /*implements RewardedVideoAdListener*/ {
     private String TAG = "AdsClassTAG";
     private MainActivity mainActivity;
 
-
     public AdsClass(MainActivity mainActivity, LinearLayout mainLayout) {
         this.mainActivity = mainActivity;
         initAds(mainActivity, mainLayout);
     }
 
     private void initAds(Context context, LinearLayout mainLayout) {
-        MobileAds.initialize(context, mobileAdsId);
+        //MobileAds.initialize(context, mobileAdsId);
         AdView mAdView = new AdView(context);
         mAdView.setAdSize(AdSize.BANNER);
-        //mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111"); // test ad
-        mAdView.setAdUnitId(bannerAdId);
+        mAdView.setAdUnitId("ca-app-pub-3940256099942544/6300978111"); // test ad
         mainLayout.addView(mAdView);
         mAdView.setAdListener(new AdListener() {
             @Override
@@ -45,8 +43,7 @@ public class AdsClass /*implements RewardedVideoAdListener*/ {
         });
 
         mInterstitialAd = new InterstitialAd(context);
-        //mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712"); // test ad
-        mInterstitialAd.setAdUnitId(interstitialAdId);
+        mInterstitialAd.setAdUnitId("ca-app-pub-3940256099942544/1033173712"); // test ad
         mInterstitialAd.setAdListener(new AdListener() {
 
             @Override
@@ -65,9 +62,6 @@ public class AdsClass /*implements RewardedVideoAdListener*/ {
             }
         });
         mInterstitialAd.loadAd(new AdRequest.Builder().build());
-        //rewardedVideoAd = MobileAds.getRewardedVideoAdInstance(context);
-        //rewardedVideoAd.setRewardedVideoAdListener(this);
-
         mAdView.loadAd(new AdRequest.Builder().build());
     }
 
@@ -98,79 +92,4 @@ public class AdsClass /*implements RewardedVideoAdListener*/ {
         };
         countDownTimer.start();
     }
-
-    /*private void showVideoReward() {
-        if (rewardedVideoAd.isLoaded()) {
-            rewardedVideoAd.show();
-        }
-    }
-
-    @Override
-    public void onRewardedVideoAdLoaded() {
-        hideDialog();
-        showVideoReward();
-    }
-
-    @Override
-    public void onRewardedVideoAdOpened() {
-
-    }
-
-    @Override
-    public void onRewardedVideoStarted() {
-
-    }
-
-    @Override
-    public void onRewardedVideoAdClosed() {
-
-    }
-
-    @Override
-    public void onRewarded(RewardItem rewardItem) {
-        if (rewardItem.getType().equals("diskReward")) {
-            mainActivity.setDiskReward(true);
-        } else if (rewardItem.getType().equals("batteryReward")) {
-            mainActivity.setBatteryReward(true);
-        } else if (rewardItem.getType().equals("miscellaneousReward")) {
-            mainActivity.setMiscellaneousReward(true);
-        }
-        Toast.makeText(mainActivity, "Thank you :)", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onRewardedVideoAdLeftApplication() {
-
-    }
-
-    @Override
-    public void onRewardedVideoAdFailedToLoad(int i) {
-        hideDialog();
-        Toast.makeText(mainActivity, mainActivity.getString(R.string.error_loading_ad), Toast.LENGTH_SHORT).show();
-        Log.e(TAG, "error: " + i);
-    }
-
-    private void createDialog() {
-        AlertDialogManager.progressBarDialog(mainActivity.getString(R.string.loading_ads));
-    }
-
-    private void hideDialog() {
-        AlertDialogManager.hideProgressBarDialog();
-    }*/
-   /*public void loadRewardedVideoAd(AdsRequest adsRequest) {
-        if (adsRequest == REQUEST_BATTERY) {
-            if (!rewardedVideoAd.isLoaded()) {
-                rewardedVideoAd.loadAd(batteryReward, new AdRequest.Builder().build());
-            }
-        } else if (adsRequest == REQUEST_DISK) {
-            if (!rewardedVideoAd.isLoaded()) {
-                rewardedVideoAd.loadAd(diskReward, new AdRequest.Builder().build());
-            }
-        } else if (adsRequest == REQUEST_MISCELLANEOUS) {
-            if (!rewardedVideoAd.isLoaded()) {
-                rewardedVideoAd.loadAd(miscellaneousReward, new AdRequest.Builder().build());
-            }
-        }
-        createDialog();
-    }*/
 }

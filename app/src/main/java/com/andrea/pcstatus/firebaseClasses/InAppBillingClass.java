@@ -25,7 +25,6 @@ import static com.andrea.pcstatus.firebaseClasses.util.IabHelper.BILLING_RESPONS
  * Created by andre on 12/03/2018.
  *
  */
-
 public class InAppBillingClass {
     private IInAppBillingService mService;
     private MainActivity mainActivity;
@@ -73,8 +72,6 @@ public class InAppBillingClass {
         skuList.add(SKU);
         Bundle querySkus = new Bundle();
         querySkus.putStringArrayList("ITEM_ID_LIST", skuList);
-    }
-
     }
 
     public void unbindInAppBillingService(){

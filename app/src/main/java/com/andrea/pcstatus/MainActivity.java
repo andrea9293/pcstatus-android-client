@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
         SingletonModel preferences = SingletonModel.getInstance();
         preferences.setSharedPreferences(getApplicationContext());
-        //preferences.setIsPremium(true); // todo per rimuovere le pubbilcità
 
         MainController mainController = new MainController(this);
         AlertDialogManager.mainController = mainController;
@@ -89,8 +88,6 @@ public class MainActivity extends AppCompatActivity implements Observer {
         billingClass = new InAppBillingClass(this);
         if (preferences.getIsFirstBoot()){
             startTutorial();
-        }else {
-            startAds();
         }
     }
 
@@ -291,11 +288,11 @@ public class MainActivity extends AppCompatActivity implements Observer {
         }
 
         if (requestCode == REQUEST_FINISH_TUTORIAL) {
-            startAds();
             SingletonModel.getInstance().setIsFirstBoot(false);
         }
     }
 
+    // not used anymore, this is free ads now
     private void startAds() {
         if (firstTutorial) {
             if (!SingletonModel.getInstance().getIsPremium()) {
@@ -310,211 +307,4 @@ public class MainActivity extends AppCompatActivity implements Observer {
     private void printToastMessage(String message) {
         Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
     }
-
-
-
-/*private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-            = new BottomNavigationView.OnNavigationItemSelectedListener() {
-
-        @Override
-        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.navigation_miscellaneous:
-                    if (isMiscellaneousReward() || SingletonModel.getInstance().getIsPremium()) {
-                        changeView(systemLoadView);
-                        if (SingletonBatteryStatus.getInstance().getMiscellaneous() != null) {
-                            mTextMessage.setText("System load");
-                            mTextMessage.setText(SingletonBatteryStatus.getInstance().getMiscellaneous());
-                        }
-                    } else {
-                        chartsLinearLayout.removeAllViews();
-                        chartsLinearLayout.addView(requestVideoReward(REQUEST_MISCELLANEOUS));
-                        mTextMessage.setText("Avaialble only in premium app");
-                    }
-                    return true;
-                case R.id.navigation_hdd:
-                    if (isDiskReward() || SingletonModel.getInstance().getIsPremium()) {
-                        changeView(disksView);
-                        if (SingletonBatteryStatus.getInstance().getDisks() != null) {
-                            mTextMessage.setText("Disks usage");
-                            mTextMessage.setText(SingletonBatteryStatus.getInstance().getDisks());
-                        }
-                    } else {
-                        chartsLinearLayout.removeAllViews();
-                        chartsLinearLayout.addView(requestVideoReward(REQUEST_DISK));
-                        mTextMessage.setText("Avaialble only in premium app");
-                    }
-                    return true;
-                case R.id.navigation_pcinfo:
-                    chartsLinearLayout.removeAllViews();
-                    if (SingletonBatteryStatus.getInstance().getComputerInfo() != null) {
-                        mTextMessage.setText("about PC");
-                        mTextMessage.setText(SingletonBatteryStatus.getInstance().getComputerInfo());
-                    }
-                    return true;
-                case R.id.navigation_battery:
-                    if (isBatteryReward() || SingletonModel.getInstance().getIsPremium()) {
-                        changeView(batteryView);
-                        if (SingletonBatteryStatus.getInstance().getBattery() != null) {
-                            mTextMessage.setText("Battery info");
-                            mTextMessage.setText(SingletonBatteryStatus.getInstance().getBattery());
-                        }
-                    } else {
-                        chartsLinearLayout.removeAllViews();
-                        chartsLinearLayout.addView(requestVideoReward(REQUEST_BATTERY));
-                        mTextMessage.setText("Avaialble only in premium app");
-                    }
-                    return true;
-                case R.id.navigation_cpu:
-                    changeView(cpuLoadView);
-                    if (SingletonBatteryStatus.getInstance().getCpuInfo() != null) {
-                        mTextMessage.setText("CPU load");
-                        mTextMessage.setText(SingletonBatteryStatus.getInstance().getCpuInfo());
-                    }
-                    return true;
-            }
-            return false;
-        }
-    };*/
-    /*private void refresh() {
-        switch (navigation.getSelectedItemId()) {
-            case R.id.navigation_miscellaneous:
-                if (isMiscellaneousReward() || SingletonModel.getInstance().getIsPremium()) {
-                    if (SingletonBatteryStatus.getInstance().getMiscellaneous() != null)
-                        mTextMessage.setText(SingletonBatteryStatus.getInstance().getMiscellaneous());
-                }
-                break;
-            case R.id.navigation_hdd:
-                if (isDiskReward() || SingletonModel.getInstance().getIsPremium()) {
-                    if (SingletonBatteryStatus.getInstance().getDisks() != null)
-                        mTextMessage.setText(SingletonBatteryStatus.getInstance().getDisks());
-                }
-                break;
-            case R.id.navigation_pcinfo:
-                if (SingletonBatteryStatus.getInstance().getComputerInfo() != null)
-                    mTextMessage.setText(SingletonBatteryStatus.getInstance().getComputerInfo());
-                break;
-            case R.id.navigation_battery:
-                if (isBatteryReward() || SingletonModel.getInstance().getIsPremium()) {
-                    if (SingletonBatteryStatus.getInstance().getBattery() != null)
-                        mTextMessage.setText(SingletonBatteryStatus.getInstance().getBattery());
-                }
-                break;
-            case R.id.navigation_cpu:
-                if (SingletonBatteryStatus.getInstance().getCpuInfo() != null)
-                    mTextMessage.setText(SingletonBatteryStatus.getInstance().getCpuInfo());
-                break;
-        }
-    }*/
-
-   /* public boolean isDiskReward() {
-        return diskReward;
-    }
-
-    public void setDiskReward(boolean diskReward) {
-        if (diskReward) {
-            CountDownTimer countDownTimer = new CountDownTimer(60000 * 5, 50) {
-                @Override
-                public void onTick(long millisUnitFinished) {
-
-                }
-
-                @Override
-                public void onFinish() {
-                    setDiskReward(false);
-                }
-            };
-            countDownTimer.start();
-        }
-        this.diskReward = diskReward;
-        navigation.setSelectedItemId(R.id.navigation_hdd);
-    }
-
-    public boolean isBatteryReward() {
-        return batteryReward;
-    }
-
-    public void setBatteryReward(boolean batteryReward) {
-        if (batteryReward) {
-            CountDownTimer countDownTimer = new CountDownTimer(60000 * 5, 50) {
-                @Override
-                public void onTick(long millisUnitFinished) {
-
-                }
-
-                @Override
-                public void onFinish() {
-                    setBatteryReward(false);
-                }
-            };
-            countDownTimer.start();
-        }
-        this.batteryReward = batteryReward;
-        navigation.setSelectedItemId(R.id.navigation_battery);
-    }
-
-    public boolean isMiscellaneousReward() {
-        return miscellaneousReward;
-    }
-
-    public void setMiscellaneousReward(boolean miscellaneousReward) {
-        if (miscellaneousReward) {
-            CountDownTimer countDownTimer = new CountDownTimer(60000 * 5, 50) {
-                @Override
-                public void onTick(long millisUnitFinished) {
-
-                }
-
-                @Override
-                public void onFinish() {
-                    setMiscellaneousReward(false);
-                }
-            };
-            countDownTimer.start();
-        }
-        this.miscellaneousReward = miscellaneousReward;
-        navigation.setSelectedItemId(R.id.navigation_miscellaneous);
-    }
-
-    private LinearLayout requestVideoReward(AdsRequest adsRequest) {
-        TextView title = new TextView(getApplicationContext());
-        title.setText("Available only with premium version");
-        title.setTextSize(24f);
-        title.setTextColor(Color.RED);
-        title.setGravity(Gravity.CENTER);
-        title.setTypeface(title.getTypeface(), Typeface.BOLD_ITALIC);
-        title.setOnClickListener(v -> AlertDialogManager.inAppBillingAlert(billingClass));
-
-        TextView desc = new TextView(getApplicationContext());
-        desc.setText("\nTo access this tab without paying the full version, watch a short ad and you will have access to it for five minutes");
-        desc.setGravity(Gravity.CENTER);
-        desc.setTextSize(18f);
-        desc.setTextColor(oldColors);
-
-        TextView textView = new TextView(getApplicationContext());
-        textView.setText("\n\nWatch the ad now!");
-        textView.setGravity(Gravity.CENTER);
-        textView.setTextSize(20f);
-        textView.setTextColor(Color.RED);
-        textView.setTypeface(textView.getTypeface(), Typeface.BOLD_ITALIC);
-        textView.setOnClickListener(v -> adsClass.loadRewardedVideoAd(adsRequest));
-
-        TextView buyPremium = new TextView(getApplicationContext());
-        buyPremium.setText("\n\nBuy the Premium version!");
-        buyPremium.setGravity(Gravity.CENTER);
-        buyPremium.setTextSize(20f);
-        buyPremium.setTextColor(Color.RED);
-        buyPremium.setTypeface(buyPremium.getTypeface(), Typeface.BOLD_ITALIC);
-        buyPremium.setOnClickListener(v -> AlertDialogManager.inAppBillingAlert(billingClass));
-
-        LinearLayout linearLayout = new LinearLayout(getApplicationContext());
-        linearLayout.setOrientation(LinearLayout.VERTICAL);
-        linearLayout.setPadding(70, 70, 70, 70);
-        linearLayout.setGravity(Gravity.CENTER);
-        linearLayout.addView(title);
-        linearLayout.addView(desc);
-        linearLayout.addView(textView);
-        linearLayout.addView(buyPremium);
-        return linearLayout;
-    }*/
 }
