@@ -10,3 +10,5 @@
 app/fabric.properties
 app/release/app-release.apk
 app/release/output.json
+app/src/main/java/com/andrea/pcstatus/PrivateCodePS.java
+app/google-services.json
