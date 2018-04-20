@@ -19,12 +19,14 @@ import com.android.vending.billing.IInAppBillingService;
 
 import java.util.ArrayList;
 
+import static com.andrea.pcstatus.PrivateCodePS.getBase64EncodedPublicKey;
 import static com.andrea.pcstatus.firebaseClasses.util.IabHelper.BILLING_RESPONSE_RESULT_OK;
 
 /**
  * Created by andre on 12/03/2018.
  *
  */
+
 public class InAppBillingClass {
     private IInAppBillingService mService;
     private MainActivity mainActivity;

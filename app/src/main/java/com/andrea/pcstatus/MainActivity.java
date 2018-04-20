@@ -18,7 +18,6 @@ import com.andrea.pcstatus.charts.LineChartMaker;
 import com.andrea.pcstatus.charts.LineChartMakerExtender;
 import com.andrea.pcstatus.charts.MultipleLineChartMaker;
 import com.andrea.pcstatus.charts.PieChartMaker;
-import com.andrea.pcstatus.firebaseClasses.AdsClass;
 import com.andrea.pcstatus.firebaseClasses.InAppBillingClass;
 import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.core.CrashlyticsCore;
@@ -50,7 +49,6 @@ public class MainActivity extends AppCompatActivity implements Observer {
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 1;
     private static final int REQUEST_FINISH_TUTORIAL = 2;
     private InAppBillingClass billingClass;
-    private boolean firstTutorial = true;
     private String TAG = "MainActivity";
 
     @Override
@@ -244,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
         switch (requestCode) {
             case MY_PERMISSIONS_REQUEST_CAMERA: {
                 // If request is cancelled, the result arrays are empty.
@@ -289,18 +287,6 @@ public class MainActivity extends AppCompatActivity implements Observer {
 
         if (requestCode == REQUEST_FINISH_TUTORIAL) {
             SingletonModel.getInstance().setIsFirstBoot(false);
-        }
-    }
-
-    // not used anymore, this is free ads now
-    private void startAds() {
-        if (firstTutorial) {
-            if (!SingletonModel.getInstance().getIsPremium()) {
-                LinearLayout mainLayout = findViewById(R.id.container);
-                new AdsClass(this, mainLayout);
-                Log.d(TAG, "pubblicità avviata");
-            }
-            firstTutorial = false;
         }
     }
 
