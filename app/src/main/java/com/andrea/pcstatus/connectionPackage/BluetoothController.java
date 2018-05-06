@@ -196,7 +196,7 @@ public class BluetoothController {
                 hideDialog();
             }
 
-            if (s != null) {
+            if (s != null && !s.isEmpty()) {
                 SingletonBatteryStatus.getInstance().setJsonStr(s);
                 mainController.setConnectionFlag(true);
                 if (firstBoot) {

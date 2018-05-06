@@ -194,7 +194,9 @@ public class WiFiController {
 
         @Override
         protected void onPostExecute(String o) {
-            SingletonBatteryStatus.getInstance().setJsonStr(o);
+            if (o != null && !o.isEmpty()) {
+                SingletonBatteryStatus.getInstance().setJsonStr(o);
+            }
         }
     }
 }

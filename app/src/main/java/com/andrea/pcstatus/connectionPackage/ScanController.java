@@ -52,8 +52,10 @@ public class ScanController implements ZXingScannerView.ResultHandler {
                     WifiManager wifi = (WifiManager) mainController.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
                     if (wifi != null) {
                         wifi.setWifiEnabled(true);
-                        while (!wifi.isWifiEnabled()){
-                            Log.d(TAG, "waiting for wifi activation");
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
                         }
                     }
                     checkWifiEnabled();
